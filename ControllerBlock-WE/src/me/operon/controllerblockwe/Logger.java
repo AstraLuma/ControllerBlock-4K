@@ -1,7 +1,6 @@
 package me.operon.controllerblockwe;
 
-public class Logger
-{
+public class Logger {
 	private java.util.logging.Logger actualLog;
 	private ControllerBlock parent;
 

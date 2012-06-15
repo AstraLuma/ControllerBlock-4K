@@ -13,8 +13,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.RedstoneWire;
 
-public class CBlock
-{
+public class CBlock {
 	private Location blockLocation = null;
 	private Material blockType = null;
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -61,7 +60,8 @@ public class CBlock
 		if (b.getType().equals(blockType)) {
 			Location bloc = b.getLocation();
 			if (placedBlocks.isEmpty()) {
-				placedBlocks.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
+				placedBlocks
+				.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
 				return true;
 			}
 			ListIterator<BlockDesc> i = placedBlocks.listIterator();
@@ -82,11 +82,12 @@ public class CBlock
 
 	public boolean delBlock(Block b) {
 		Location u = b.getLocation();
-		for (Iterator<BlockDesc> i = placedBlocks.iterator(); i.hasNext(); ) {
+		for (Iterator<BlockDesc> i = placedBlocks.iterator(); i.hasNext();) {
 			Location t = i.next().blockLoc;
 			if (t.equals(u)) {
 				i.remove();
-				CBlock check = parent.getControllerBlockFor(this, u, null, Boolean.valueOf(true));
+				CBlock check = parent.getControllerBlockFor(this, u, null,
+						Boolean.valueOf(true));
 				if (check != null) {
 					b.setType(check.blockType);
 					b.setData(check.getBlock(u).blockData);
@@ -116,8 +117,7 @@ public class CBlock
 		return getBlock(l) != null;
 	}
 
-	public void updateBlock(Block b)
-	{
+	public void updateBlock(Block b) {
 		Iterator<BlockDesc> i = placedBlocks.iterator();
 		while (i.hasNext()) {
 			BlockDesc d = i.next();
@@ -142,10 +142,10 @@ public class CBlock
 		}
 	}
 
-	public void destroyWithOutDrops()
-	{
+	public void destroyWithOutDrops() {
 		turnOff();
 	}
+
 	public void destroy() {
 		turnOff();
 		int i = placedBlocks.size();
@@ -158,7 +158,8 @@ public class CBlock
 				j = i;
 				i -= i;
 			}
-			blockLocation.getWorld().dropItemNaturally(blockLocation, new ItemStack(blockType, j));
+			blockLocation.getWorld().dropItemNaturally(blockLocation,
+					new ItemStack(blockType, j));
 		}
 	}
 
@@ -167,7 +168,8 @@ public class CBlock
 	}
 
 	public void doRedstoneCheck() {
-		Block check = Util.getBlockAtLocation(blockLocation).getRelative(BlockFace.UP);
+		Block check = Util.getBlockAtLocation(blockLocation).getRelative(
+				BlockFace.UP);
 		doRedstoneCheck(check.getState());
 	}
 
@@ -180,29 +182,30 @@ public class CBlock
 		} else if (s.getType().equals(Material.REDSTONE_TORCH_OFF)) {
 			turnOn();
 		} else if (s.getType().equals(Material.REDSTONE_WIRE)) {
-			if (((RedstoneWire)s.getData()).isPowered()) {
+			if (((RedstoneWire) s.getData()).isPowered()) {
 				turnOff();
 			} else {
 				turnOn();
 			}
-		}
-		else if (s.getType().equals(Material.AIR)) {
+		} else if (s.getType().equals(Material.AIR)) {
 			turnOn();
 		}
 	}
 
-	public void turnOff()
-	{
+	public void turnOff() {
 		Iterator<BlockDesc> i = placedBlocks.iterator();
 		while (i.hasNext()) {
 			BlockDesc d = i.next();
 			Location loc = d.blockLoc;
-			CBlock check = parent.getControllerBlockFor(this, loc, null, Boolean.valueOf(true));
-			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+			CBlock check = parent.getControllerBlockFor(this, loc, null,
+					Boolean.valueOf(true));
+			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(),
+					loc.getBlockY(), loc.getBlockZ());
 			boolean applyPhysics = true;
 
 			if (check != null) {
-				cur.setTypeIdAndData(check.blockType.getId(), check.getBlock(loc).blockData, applyPhysics);
+				cur.setTypeIdAndData(check.blockType.getId(),
+						check.getBlock(loc).blockData, applyPhysics);
 			} else if (protectedLevel == 0) {
 				cur.setType(Material.AIR);
 			}
@@ -211,15 +214,23 @@ public class CBlock
 	}
 
 	public void turnOn() {
-		for (Iterator<BlockDesc> i = placedBlocks.iterator(); i.hasNext(); ) {
+		for (Iterator<BlockDesc> i = placedBlocks.iterator(); i.hasNext();) {
 			BlockDesc b = i.next();
 			Location loc = b.blockLoc;
-			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(),
+					loc.getBlockY(), loc.getBlockZ());
 			boolean applyPhysics = true;
-			if (protectedLevel == 0)
-			{
-				if ((cur.getType().equals(Material.SAND)) || (cur.getType().equals(Material.GRAVEL)) || (cur.getType().equals(Material.TORCH)) || (cur.getType().equals(Material.REDSTONE_TORCH_OFF)) || (cur.getType().equals(Material.REDSTONE_TORCH_ON)) || (cur.getType().equals(Material.RAILS)) || (cur.getType().equals(Material.LADDER)) || (cur.getType().equals(Material.GRAVEL)) || (cur.getType().equals(Material.POWERED_RAIL)) || (cur.getType().equals(Material.DETECTOR_RAIL)))
-				{
+			if (protectedLevel == 0) {
+				if ((cur.getType().equals(Material.SAND))
+						|| (cur.getType().equals(Material.GRAVEL))
+						|| (cur.getType().equals(Material.TORCH))
+						|| (cur.getType().equals(Material.REDSTONE_TORCH_OFF))
+						|| (cur.getType().equals(Material.REDSTONE_TORCH_ON))
+						|| (cur.getType().equals(Material.RAILS))
+						|| (cur.getType().equals(Material.LADDER))
+						|| (cur.getType().equals(Material.GRAVEL))
+						|| (cur.getType().equals(Material.POWERED_RAIL))
+						|| (cur.getType().equals(Material.DETECTOR_RAIL))) {
 					applyPhysics = false;
 				}
 			}
@@ -235,30 +246,31 @@ public class CBlock
 			if (l.equals(b.blockLoc)) {
 				Block cur = Util.getBlockAtLocation(l);
 				boolean applyPhysics = true;
-				if (protectedLevel == 0)
-				{
+				if (protectedLevel == 0) {
 					applyPhysics = false;
 				}
-				cur.setTypeIdAndData(blockType.getId(), b.blockData, applyPhysics);
+				cur.setTypeIdAndData(blockType.getId(), b.blockData,
+						applyPhysics);
 			}
 		}
 	}
 
-	public CBlock(ControllerBlock p, int version, String s)
-	{
+	public CBlock(ControllerBlock p, int version, String s) {
 		parent = p;
 		String[] args = s.split(",");
 
-		if (((version < 3) && (args.length < 4)) || (
-				(version >= 3) && (args.length < 5)))
-		{
-			parent.log.severe("ERROR: Invalid ControllerBlock description in data file, skipping");
+		if (((version < 3) && (args.length < 4))
+				|| ((version >= 3) && (args.length < 5))) {
+			parent.log
+			.severe("ERROR: Invalid ControllerBlock description in data file, skipping");
 			return;
 		}
 
 		if (version >= 4) {
-			blockLocation = parseLocation(p.getServer(), args[0], args[1], args[2], args[3]);
-			parent.log.debug("CB Location: " + Util.formatLocation(blockLocation));
+			blockLocation = parseLocation(p.getServer(), args[0], args[1],
+					args[2], args[3]);
+			parent.log.debug("CB Location: "
+					+ Util.formatLocation(blockLocation));
 		}
 
 		blockType = Material.getMaterial(args[3]);
@@ -280,8 +292,7 @@ public class CBlock
 			if (args[i].equals("semi-protected")) {
 				protectedLevel = 1;
 				i++;
-			}
-			else if (args[i].equals("unprotected")) {
+			} else if (args[i].equals("unprotected")) {
 				protectedLevel = 2;
 				i++;
 			}
@@ -290,17 +301,20 @@ public class CBlock
 		while (i < args.length) {
 			if (version >= 4) {
 				if (args.length - i >= 6) {
-					placedBlocks.add(new BlockDesc(parseLocation(p.getServer(), args[(i++)], args[(i++)], args[(i++)], args[(i++)]), Byte.valueOf(Byte.parseByte(args[(i++)]))));
+					placedBlocks.add(new BlockDesc(
+							parseLocation(p.getServer(), args[(i++)],
+									args[(i++)], args[(i++)], args[(i++)]),
+									Byte.valueOf(Byte.parseByte(args[(i++)]))));
 				} else {
-					parent.log.severe("ERROR: Block description in save file is corrupt");
+					parent.log
+					.severe("ERROR: Block description in save file is corrupt");
 					return;
 				}
 			}
 		}
 	}
 
-	public String serialize()
-	{
+	public String serialize() {
 		String result = loc2str(blockLocation);
 		result = result + "," + blockType;
 		result = result + "," + owner;
@@ -318,19 +332,23 @@ public class CBlock
 		return result;
 	}
 
-	public Location parseLocation(Server server, String worldName, String X, String Y, String Z)
-	{
-		return new Location(server.getWorld(worldName), Integer.parseInt(X), Integer.parseInt(Y), Integer.parseInt(Z));
+	public Location parseLocation(Server server, String worldName, String X,
+			String Y, String Z) {
+		return new Location(server.getWorld(worldName), Integer.parseInt(X),
+				Integer.parseInt(Y), Integer.parseInt(Z));
 	}
 
-	public String loc2str(Location l)
-	{
+	public String loc2str(Location l) {
 		if (l == null) {
-			parent.log.severe("ERROR: null location while trying to save CBlock at " + loc2str(blockLocation));
+			parent.log
+			.severe("ERROR: null location while trying to save CBlock at "
+					+ loc2str(blockLocation));
 		}
 		if (l.getWorld() == null) {
-			parent.log.severe("ERROR: null world in location while trying to save CBlock");
+			parent.log
+			.severe("ERROR: null world in location while trying to save CBlock");
 		}
-		return l.getWorld().getName() + "," + l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ();
+		return l.getWorld().getName() + "," + l.getBlockX() + ","
+		+ l.getBlockY() + "," + l.getBlockZ();
 	}
 }

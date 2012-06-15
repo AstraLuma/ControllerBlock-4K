@@ -9,20 +9,19 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.material.MaterialData;
 
-public class CRedstoneListener
-implements Listener
-{
+public class CRedstoneListener implements Listener {
 	private ControllerBlock parent;
 
-	public CRedstoneListener(ControllerBlock controllerBlock)
-	{
+	public CRedstoneListener(ControllerBlock controllerBlock) {
 		parent = controllerBlock;
 	}
-	@EventHandler(priority=EventPriority.MONITOR)
+
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockRedstoneChange(BlockRedstoneEvent e) {
 		CBlock conBlock = null;
 		if (parent.getConfigu().getBool(Config.Option.QuickRedstoneCheck)) {
-			conBlock = parent.getCBlock(e.getBlock().getRelative(BlockFace.DOWN).getLocation());
+			conBlock = parent.getCBlock(e.getBlock()
+					.getRelative(BlockFace.DOWN).getLocation());
 		}
 		if (conBlock == null) {
 			return;
@@ -31,7 +30,7 @@ implements Listener
 		BlockState s = e.getBlock().getState();
 		if (s.getType().equals(Material.REDSTONE_WIRE)) {
 			MaterialData m = s.getData();
-			m.setData((byte)e.getNewCurrent());
+			m.setData((byte) e.getNewCurrent());
 			s.setData(m);
 		}
 		conBlock.doRedstoneCheck(s);

@@ -7,8 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
-public class PermissionHandler
-{
+public class PermissionHandler {
 	private ControllerBlock parent = null;
 
 	private List<String> builtinAdminPlayers = new ArrayList<String>();
@@ -21,41 +20,46 @@ public class PermissionHandler
 
 	public boolean checkPermissionsEx(Player p, String perm) {
 		if (pex == null) {
-			Plugin plug = parent.getServer().getPluginManager().getPlugin("PermissionsEx");
+			Plugin plug = parent.getServer().getPluginManager()
+					.getPlugin("PermissionsEx");
 			if (plug != null) {
-				pex = ((PermissionsEx)plug);
+				pex = ((PermissionsEx) plug);
 				parent.log.debug("PermissionsEx detected and enabled");
 			}
 		}
 		if (pex != null) {
-			parent.log.debug("Running PermissionsEx check on " + p.getName() + " for " + perm);
+			parent.log.debug("Running PermissionsEx check on " + p.getName()
+					+ " for " + perm);
 			return pex.has(p, perm);
 		}
 		return false;
 	}
 
-	public void addBuiltinAdminPlayer(String name)
-	{
+	public void addBuiltinAdminPlayer(String name) {
 		builtinAdminPlayers.add(name);
 	}
 
 	public boolean isAdminPlayer(Player p) {
 		parent.log.debug("Checking if " + p.getName() + " is a CB admin");
-		if ((parent.getConfigu().getBool(Config.Option.ServerOpIsAdmin)) && (p.isOp())) {
-			parent.log.debug(p.getName() + " is a server operator, and serverOpIsAdmin is set");
+		if ((parent.getConfigu().getBool(Config.Option.ServerOpIsAdmin))
+				&& (p.isOp())) {
+			parent.log.debug(p.getName()
+					+ " is a server operator, and serverOpIsAdmin is set");
 			return true;
 		}
 
 		if (checkPermissionsEx(p, "controllerblock.admin")) {
-			parent.log.debug("PermissionsEx said " + p.getName() + " has admin permissions");
+			parent.log.debug("PermissionsEx said " + p.getName()
+					+ " has admin permissions");
 			return true;
 		}
 
 		String pn = p.getName();
 		Iterator<String> i = builtinAdminPlayers.iterator();
 		while (i.hasNext()) {
-			if (((String)i.next()).equals(pn)) {
-				parent.log.debug(p.getName() + " is listed in the ControllerBlock.ini as an admin");
+			if (i.next().equals(pn)) {
+				parent.log.debug(p.getName()
+						+ " is listed in the ControllerBlock.ini as an admin");
 				return true;
 			}
 		}
@@ -70,12 +74,14 @@ public class PermissionHandler
 		}
 
 		if (checkPermissionsEx(p, "controllerblock.create")) {
-			parent.log.debug("PermissionsEx said " + p.getName() + " can create");
+			parent.log.debug("PermissionsEx said " + p.getName()
+					+ " can create");
 			return true;
 		}
 
 		if (parent.getConfigu().getBool(Config.Option.AnyoneCanCreate)) {
-			parent.log.debug("Anyone is allowed to create, letting " + p.getName() + " create");
+			parent.log.debug("Anyone is allowed to create, letting "
+					+ p.getName() + " create");
 		}
 		return parent.getConfigu().getBool(Config.Option.AnyoneCanCreate);
 	}
@@ -87,19 +93,23 @@ public class PermissionHandler
 		}
 
 		if (checkPermissionsEx(p, "controllerblock.modifyOther")) {
-			parent.log.debug("PermissionsEx says " + p.getName() + " has global modify permissions");
+			parent.log.debug("PermissionsEx says " + p.getName()
+					+ " has global modify permissions");
 			return true;
 		}
 
 		if (parent.getConfigu().getBool(Config.Option.AnyoneCanModifyOther)) {
-			parent.log.debug("Anyone is allowed to modify anyones blocks, allowing " + p.getName() + " to modify");
+			parent.log
+			.debug("Anyone is allowed to modify anyones blocks, allowing "
+					+ p.getName() + " to modify");
 		}
 		return parent.getConfigu().getBool(Config.Option.AnyoneCanModifyOther);
 	}
 
 	public boolean canModify(Player p, CBlock c) {
 		if (p.getName().equals(c.getOwner())) {
-			parent.log.debug(p.getName() + " owns this controller, allowing to modify");
+			parent.log.debug(p.getName()
+					+ " owns this controller, allowing to modify");
 			return true;
 		}
 		return canModify(p);
@@ -112,19 +122,23 @@ public class PermissionHandler
 		}
 
 		if (checkPermissionsEx(p, "controllerblock.destroyOther")) {
-			parent.log.debug("PermissionsEx says " + p.getName() + " has global destroy permissions");
+			parent.log.debug("PermissionsEx says " + p.getName()
+					+ " has global destroy permissions");
 			return true;
 		}
 
 		if (parent.getConfigu().getBool(Config.Option.AnyoneCanDestroyOther)) {
-			parent.log.debug("Anyone is allowed to destroy anyones blocks, allowing " + p.getName() + " to destroy");
+			parent.log
+			.debug("Anyone is allowed to destroy anyones blocks, allowing "
+					+ p.getName() + " to destroy");
 		}
 		return parent.getConfigu().getBool(Config.Option.AnyoneCanDestroyOther);
 	}
 
 	public boolean canDestroy(Player p, CBlock c) {
 		if (p.getName().equals(c.getOwner())) {
-			parent.log.debug(p.getName() + "owns this controller, allowing them to destroy it");
+			parent.log.debug(p.getName()
+					+ "owns this controller, allowing them to destroy it");
 			return true;
 		}
 		return canDestroy(p);
