@@ -1,6 +1,6 @@
-name: ControllerBlock
-main: net.servfire.hellfire.bukkit.ControllerBlock.ControllerBlock
-version: 1.60
+name: ControllerBlockWE
+main: me.operon.controllerblockwe.ControllerBlock
+version: 2
 commands:
     cblock:
         description: Reload the config.
