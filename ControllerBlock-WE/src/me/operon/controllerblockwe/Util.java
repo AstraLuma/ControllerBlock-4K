@@ -39,7 +39,7 @@ public class Util {
 					+ c.numBlocks()
 					+ "/"
 					+ c.getParent().getConfigu()
-					.getInt(Config.Option.MaxBlocksPerController)
+							.getInt(Config.Option.MaxBlocksPerController)
 					+ " blocks)";
 		}
 		return "(" + c.numBlocks() + " blocks)";
@@ -60,7 +60,7 @@ public class Util {
 		if ((t1.equals(Material.REDSTONE_TORCH_ON))
 				|| ((t1.equals(Material.REDSTONE_TORCH_OFF)) && (t2
 						.equals(Material.REDSTONE_TORCH_ON)))
-						|| (t2.equals(Material.REDSTONE_TORCH_OFF))) {
+				|| (t2.equals(Material.REDSTONE_TORCH_OFF))) {
 			return true;
 		}
 		return t1.equals(t2);

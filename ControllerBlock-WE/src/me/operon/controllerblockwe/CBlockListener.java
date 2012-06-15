@@ -208,22 +208,22 @@ public class CBlockListener implements Runnable, Listener {
 				b.getLocation(), b.getType(), null)) != null) {
 			switch (((BlockProtectMode) parent.getConfigu().getOpt(
 					Config.Option.BlockProtectMode)).ordinal()) {
-						case 1:
-							if ((conBlock.protectedLevel != 0)
-									&& ((conBlock.isOn()) || (conBlock.protectedLevel == 2))) {
-								break;
-							}
-							player.sendMessage("This block is controlled by a controller block at "
-									+ conBlock.getLoc().getBlockX()
-									+ ", "
-									+ conBlock.getLoc().getBlockY()
-									+ ", "
-									+ conBlock.getLoc().getBlockZ());
-							e.setCancelled(true);
-							break;
-						case 2:
-							conBlock.delBlock(b);
-						case 3:
+				case 1:
+					if ((conBlock.protectedLevel != 0)
+							&& ((conBlock.isOn()) || (conBlock.protectedLevel == 2))) {
+						break;
+					}
+					player.sendMessage("This block is controlled by a controller block at "
+							+ conBlock.getLoc().getBlockX()
+							+ ", "
+							+ conBlock.getLoc().getBlockY()
+							+ ", "
+							+ conBlock.getLoc().getBlockZ());
+					e.setCancelled(true);
+					break;
+				case 2:
+					conBlock.delBlock(b);
+				case 3:
 			}
 		}
 	}
@@ -365,8 +365,8 @@ public class CBlockListener implements Runnable, Listener {
 		if ((parent.getConfigu().getInt(Config.Option.MaxBlocksPerController)
 				.intValue() != 0)
 				&& (conBlock.numBlocks() >= parent.getConfigu()
-				.getInt(Config.Option.MaxBlocksPerController)
-				.intValue())
+						.getInt(Config.Option.MaxBlocksPerController)
+						.intValue())
 				&& (!parent.getPerm().isAdminPlayer(player))) {
 			player.sendMessage("Controller block is full "
 					+ Util.formatBlockCount(conBlock));
@@ -444,9 +444,9 @@ public class CBlockListener implements Runnable, Listener {
 			}
 			Player player = getPlayerEditing(conBlock);
 			parent.log
-			.debug("Block at "
-					+ Util.formatLocation(e.getToBlock().getLocation())
-					+ " was drowned while editing and removed from a controller");
+					.debug("Block at "
+							+ Util.formatLocation(e.getToBlock().getLocation())
+							+ " was drowned while editing and removed from a controller");
 			conBlock.delBlock(e.getToBlock());
 			player.sendMessage("Removing block due to change while editing "
 					+ Util.formatBlockCount(conBlock));
@@ -521,17 +521,17 @@ public class CBlockListener implements Runnable, Listener {
 					if (!Util.typeEquals(b.getType(),
 							((CBlock) e.getValue()).getType())) {
 						parent.log
-						.debug("Block at "
-								+ Util.formatLocation(b.getLocation())
-								+ " was " + b.getType()
-								+ " but expected "
-								+ ((CBlock) e.getValue()).getType()
-								+ ", dupe!");
+								.debug("Block at "
+										+ Util.formatLocation(b.getLocation())
+										+ " was " + b.getType()
+										+ " but expected "
+										+ ((CBlock) e.getValue()).getType()
+										+ ", dupe!");
 						i.remove();
 						((Player) e.getKey())
-						.sendMessage("Removing block due to changed while editing "
-								+ Util.formatBlockCount((CBlock) e
-										.getValue()));
+								.sendMessage("Removing block due to changed while editing "
+										+ Util.formatBlockCount((CBlock) e
+												.getValue()));
 						return;
 					}
 				}

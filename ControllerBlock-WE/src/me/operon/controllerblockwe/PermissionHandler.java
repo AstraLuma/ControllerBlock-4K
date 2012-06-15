@@ -100,8 +100,8 @@ public class PermissionHandler {
 
 		if (parent.getConfigu().getBool(Config.Option.AnyoneCanModifyOther)) {
 			parent.log
-			.debug("Anyone is allowed to modify anyones blocks, allowing "
-					+ p.getName() + " to modify");
+					.debug("Anyone is allowed to modify anyones blocks, allowing "
+							+ p.getName() + " to modify");
 		}
 		return parent.getConfigu().getBool(Config.Option.AnyoneCanModifyOther);
 	}
@@ -129,8 +129,8 @@ public class PermissionHandler {
 
 		if (parent.getConfigu().getBool(Config.Option.AnyoneCanDestroyOther)) {
 			parent.log
-			.debug("Anyone is allowed to destroy anyones blocks, allowing "
-					+ p.getName() + " to destroy");
+					.debug("Anyone is allowed to destroy anyones blocks, allowing "
+							+ p.getName() + " to destroy");
 		}
 		return parent.getConfigu().getBool(Config.Option.AnyoneCanDestroyOther);
 	}

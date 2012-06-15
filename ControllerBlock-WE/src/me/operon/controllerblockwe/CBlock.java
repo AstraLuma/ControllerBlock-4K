@@ -61,7 +61,7 @@ public class CBlock {
 			Location bloc = b.getLocation();
 			if (placedBlocks.isEmpty()) {
 				placedBlocks
-				.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
+						.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
 				return true;
 			}
 			ListIterator<BlockDesc> i = placedBlocks.listIterator();
@@ -262,7 +262,7 @@ public class CBlock {
 		if (((version < 3) && (args.length < 4))
 				|| ((version >= 3) && (args.length < 5))) {
 			parent.log
-			.severe("ERROR: Invalid ControllerBlock description in data file, skipping");
+					.severe("ERROR: Invalid ControllerBlock description in data file, skipping");
 			return;
 		}
 
@@ -304,10 +304,10 @@ public class CBlock {
 					placedBlocks.add(new BlockDesc(
 							parseLocation(p.getServer(), args[(i++)],
 									args[(i++)], args[(i++)], args[(i++)]),
-									Byte.valueOf(Byte.parseByte(args[(i++)]))));
+							Byte.valueOf(Byte.parseByte(args[(i++)]))));
 				} else {
 					parent.log
-					.severe("ERROR: Block description in save file is corrupt");
+							.severe("ERROR: Block description in save file is corrupt");
 					return;
 				}
 			}
@@ -341,14 +341,14 @@ public class CBlock {
 	public String loc2str(Location l) {
 		if (l == null) {
 			parent.log
-			.severe("ERROR: null location while trying to save CBlock at "
-					+ loc2str(blockLocation));
+					.severe("ERROR: null location while trying to save CBlock at "
+							+ loc2str(blockLocation));
 		}
 		if (l.getWorld() == null) {
 			parent.log
-			.severe("ERROR: null world in location while trying to save CBlock");
+					.severe("ERROR: null world in location while trying to save CBlock");
 		}
 		return l.getWorld().getName() + "," + l.getBlockX() + ","
-		+ l.getBlockY() + "," + l.getBlockZ();
+				+ l.getBlockY() + "," + l.getBlockZ();
 	}
 }

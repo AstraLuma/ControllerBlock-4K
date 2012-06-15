@@ -33,11 +33,9 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	private Config config = new Config();
 	private PermissionHandler permissionHandler = new PermissionHandler(this);
 	private final CBlockListener blockListener = new CBlockListener(this);
-	private final CRedstoneListener redstoneListener = new CRedstoneListener(
-			this);
+	private final CRedstoneListener redstoneListener = new CRedstoneListener(this);
 	private final CPlayerListener playerListener = new CPlayerListener(this);
-	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(
-			this);
+	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(this);
 
 	public boolean blockPhysicsEditCheck = false;
 	private boolean beenLoaded = false;
