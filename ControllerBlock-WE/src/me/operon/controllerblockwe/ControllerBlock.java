@@ -133,9 +133,9 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 								}
 							}
 						} catch (IncompleteRegionException e) {
-							player.sendMessage("Incomplete region. Finish your selection first.");
+							player.sendMessage("§cIncomplete region. Finish your selection first.");
 						} catch (NonBukkitWorld e) {
-							player.sendMessage("WorldEdit gave me a non-Bukkit world. Contact your admin.");
+							player.sendMessage("§cWorldEdit gave me a non-Bukkit world. Contact your admin.");
 						}
 						sender.sendMessage(affected + " blocks added to ControllerBlock");
 					} else if (args[0].equalsIgnoreCase("remove")
@@ -155,9 +155,9 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 								}
 							}
 						} catch (IncompleteRegionException e) {
-							player.sendMessage("Incomplete region. Finish your selection first.");
+							player.sendMessage("§cIncomplete region. Finish your selection first.");
 						} catch (NonBukkitWorld e) {
-							player.sendMessage("WorldEdit gave me a non-Bukkit world. Contact your admin.");
+							player.sendMessage("§cWorldEdit gave me a non-Bukkit world. Contact your admin.");
 						}
 						sender.sendMessage(affected + " blocks removed from ControllerBlock");
 					}
