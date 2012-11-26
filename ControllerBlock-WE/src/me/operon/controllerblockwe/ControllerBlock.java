@@ -62,7 +62,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	public void onLoad() {
 		if (!beenLoaded) {
 			log.info(getDescription().getVersion()
-					+ " by Zero9195 (Original by Hell_Fire). Updated for R6 by Sorklin, Edited for WorldEdit by Techzune");
+					+ " by Zero9195 (Original by Hell_Fire). Updated for R6 by Sorklin, Edited for WorldEdit by Techzune, Edited for Four Kingdoms by astronouth7303");
 			checkPluginDataDir();
 			loadConfig();
 			beenLoaded = true;
