@@ -109,7 +109,30 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	
 	public boolean onCommand(CommandSender sender, Command command,
 			String label, String[] args) {
-		if ((sender instanceof Player)) {
+		if (label == "cblock" && args[0].equalsIgnoreCase("help")) {
+			if (args.length == 1) {
+				sender.sendMessage("Commands: reload, add, remove");
+			} else {
+				if (args[1].equalsIgnoreCase("add")
+						|| args[1].equalsIgnoreCase("we")
+						|| args[1].equalsIgnoreCase("a")) {
+					sender.sendMessage( new String[] {
+							"Aliases: add, we, a", 
+							"Usage: /cblock add",
+							"Adds the current WorldEdit selection to the current ControllerBlock."});
+				} else if (args[1].equalsIgnoreCase("remove")
+						|| args[1].equalsIgnoreCase("s")) {
+					sender.sendMessage( new String[] {
+							"Aliases: remove, s", 
+							"Usage: /cblock remove",
+							"Removes the current WorldEdit selection from the current ControllerBlock."});
+				} else if (args[1].equals("reload")) {
+					sender.sendMessage( new String[] {
+							"Usage: /cblock reload",
+							"Reloads the ControllerBlock-4K configuration file."});
+				}
+			}
+		} else if ((sender instanceof Player)) {
 			Player player = (Player) sender;
 			if (player.isOp()) {
 				if (label.equals("cblock")) {
