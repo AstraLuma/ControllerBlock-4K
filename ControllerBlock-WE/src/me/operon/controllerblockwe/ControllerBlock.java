@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import me.operon.controllerblockwe.SelectionIterator.NonBukkitWorld;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -24,6 +27,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 
@@ -102,7 +106,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			beenEnabled = true;
 		}
 	}
-
+	
 	public boolean onCommand(CommandSender sender, Command command,
 			String label, String[] args) {
 		if ((sender instanceof Player)) {
@@ -117,49 +121,29 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 							|| args[0].equalsIgnoreCase("we")
 							|| args[0].equalsIgnoreCase("a")) {
 						Selection reg = getwe().getSelection(player);
-						Location min = reg.getMinimumPoint();
-						Location max = reg.getMaximumPoint();
 						int affected = 0;
-						int minX = min.getBlockX();
-						int minY = min.getBlockY();
-						int minZ = min.getBlockZ();
-						int maxX = max.getBlockX();
-						int maxY = max.getBlockY();
-						int maxZ = max.getBlockZ();
-						for (int x = minX; x <= maxX; x++) {
-							for (int y = minY; y <= maxY; y++) {
-								for (int z = minZ; z <= maxZ; z++) {
-									Location fpt = new Location(
-											player.getWorld(), x, y, z);
-									Block dablock = fpt.getBlock();
-									CBlock conBlock = map.get(player);
-									if (!conBlock.hasBlock(fpt)) {
-										if (conBlock.addBlock(dablock)) {
-											affected++;
-										}
+						try {
+							for (Location fpt : new SelectionIterator(reg)) {
+								Block dablock = fpt.getBlock();
+								CBlock conBlock = map.get(player);
+								if (!conBlock.hasBlock(fpt)) {
+									if (conBlock.addBlock(dablock)) {
+										affected++;
 									}
 								}
 							}
+						} catch (IncompleteRegionException e) {
+							player.sendMessage("Incomplete region. Finish your selection first.");
+						} catch (NonBukkitWorld e) {
+							player.sendMessage("WorldEdit gave me a non-Bukkit world. Contact your admin.");
 						}
-						sender.sendMessage(affected
-								+ " blocks added to ControllerBlock");
+						sender.sendMessage(affected + " blocks added to ControllerBlock");
 					} else if (args[0].equalsIgnoreCase("remove")
 							|| args[0].equalsIgnoreCase("s")) {
 						Selection reg = getwe().getSelection(player);
-						Location min = reg.getMinimumPoint();
-						Location max = reg.getMaximumPoint();
 						int affected = 0;
-						int minX = min.getBlockX();
-						int minY = min.getBlockY();
-						int minZ = min.getBlockZ();
-						int maxX = max.getBlockX();
-						int maxY = max.getBlockY();
-						int maxZ = max.getBlockZ();
-						for (int x = minX; x <= maxX; x++) {
-							for (int y = minY; y <= maxY; y++) {
-								for (int z = minZ; z <= maxZ; z++) {
-									Location fpt = new Location(
-											player.getWorld(), x, y, z);
+						try {
+							for (Location fpt : new SelectionIterator(reg)) {
 									Block dablock = fpt.getBlock();
 									CBlock conBlock = map.get(player);
 									player.sendMessage(String.valueOf(dablock
@@ -168,12 +152,14 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 										if (conBlock.delBlock(dablock)) {
 											affected++;
 										}
-									}
 								}
 							}
+						} catch (IncompleteRegionException e) {
+							player.sendMessage("Incomplete region. Finish your selection first.");
+						} catch (NonBukkitWorld e) {
+							player.sendMessage("WorldEdit gave me a non-Bukkit world. Contact your admin.");
 						}
-						sender.sendMessage(affected
-								+ " blocks removed from ControllerBlock");
+						sender.sendMessage(affected + " blocks removed from ControllerBlock");
 					}
 				}
 			}
