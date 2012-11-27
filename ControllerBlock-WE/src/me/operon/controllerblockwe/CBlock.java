@@ -16,8 +16,7 @@ import org.bukkit.material.RedstoneWire;
 public class CBlock {
 	private Location blockLocation = null;
 	private Material blockType = null;
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private List<BlockDesc> placedBlocks = new ArrayList();
+	private List<BlockDesc> placedBlocks = new ArrayList<BlockDesc>();
 	private String owner = null;
 
 	private ControllerBlock parent = null;

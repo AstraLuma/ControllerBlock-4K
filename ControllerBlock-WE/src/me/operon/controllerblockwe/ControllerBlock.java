@@ -206,6 +206,8 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 				}
 				sender.sendMessage(affected
 						+ " blocks removed from ControllerBlock");
+			} else {
+				sender.sendMessage("Unknown subcommand to cblock. Try /cblock help");
 			}
 		}
 
