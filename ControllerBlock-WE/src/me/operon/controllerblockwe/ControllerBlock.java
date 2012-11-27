@@ -22,7 +22,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -109,89 +108,96 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	
 	public boolean onCommand(CommandSender sender, Command command,
 			String label, String[] args) {
-		if (label == "cblock" && args[0].equalsIgnoreCase("help")) {
-			if (args.length == 1) {
-				sender.sendMessage("Commands: reload, add, remove");
-			} else {
-				if (args[1].equalsIgnoreCase("add")
-						|| args[1].equalsIgnoreCase("we")
-						|| args[1].equalsIgnoreCase("a")) {
-					sender.sendMessage( new String[] {
-							"Aliases: add, we, a", 
-							"Usage: /cblock add",
-							"Adds the current WorldEdit selection to the current ControllerBlock."});
-				} else if (args[1].equalsIgnoreCase("remove")
-						|| args[1].equalsIgnoreCase("s")) {
-					sender.sendMessage( new String[] {
-							"Aliases: remove, s", 
-							"Usage: /cblock remove",
-							"Removes the current WorldEdit selection from the current ControllerBlock."});
-				} else if (args[1].equals("reload")) {
-					sender.sendMessage( new String[] {
-							"Usage: /cblock reload",
-							"Reloads the ControllerBlock-4K configuration file."});
-				}
-			}
-		} else if ((sender instanceof Player)) {
-			Player player = (Player) sender;
-			if (player.isOp()) {
-				if (label.equals("cblock")) {
-					if (args[0].equals("reload")) {
-						loadConfig();
-						System.out.println("Config reloaded");
-						player.sendMessage("Config reloaded");
-					} else if (args[0].equalsIgnoreCase("add")
-							|| args[0].equalsIgnoreCase("we")
-							|| args[0].equalsIgnoreCase("a")) {
-						Selection reg = getwe().getSelection(player);
-						int affected = 0;
-						try {
-							for (Location fpt : new SelectionIterator(reg)) {
-								Block dablock = fpt.getBlock();
-								CBlock conBlock = map.get(player);
-								if (!conBlock.hasBlock(fpt)) {
-									if (conBlock.addBlock(dablock)) {
-										affected++;
-									}
-								}
-							}
-						} catch (IncompleteRegionException e) {
-							Util.playerSendError(player, "Incomplete region. Finish your selection first.");
-						} catch (NonBukkitWorld e) {
-							Util.playerSendError(player, "WorldEdit gave me a non-Bukkit world. Contact your admin.");
-						}
-						sender.sendMessage(affected + " blocks added to ControllerBlock");
-					} else if (args[0].equalsIgnoreCase("remove")
-							|| args[0].equalsIgnoreCase("s")) {
-						Selection reg = getwe().getSelection(player);
-						int affected = 0;
-						try {
-							for (Location fpt : new SelectionIterator(reg)) {
-									Block dablock = fpt.getBlock();
-									CBlock conBlock = map.get(player);
-									player.sendMessage(String.valueOf(dablock
-											.getData()));
-									if (!conBlock.hasBlock(fpt)) {
-										if (conBlock.delBlock(dablock)) {
-											affected++;
-										}
-								}
-							}
-						} catch (IncompleteRegionException e) {
-							Util.playerSendError(player, "Incomplete region. Finish your selection first.");
-						} catch (NonBukkitWorld e) {
-							Util.playerSendError(player, "WorldEdit gave me a non-Bukkit world. Contact your admin.");
-						}
-						sender.sendMessage(affected + " blocks removed from ControllerBlock");
+		Player player = null;
+		if ((sender instanceof Player)) {
+			player = (Player) sender;
+		}
+		if (label.equals("cblock")) {
+			if (args[0].equalsIgnoreCase("help")) {
+				if (args.length == 1) {
+					sender.sendMessage("Commands: reload, add, remove");
+				} else {
+					if (args[1].equalsIgnoreCase("add")
+							|| args[1].equalsIgnoreCase("we")
+							|| args[1].equalsIgnoreCase("a")) {
+						sender.sendMessage(new String[] {
+								"Aliases: add, we, a", "Usage: /cblock add",
+								"Adds the current WorldEdit selection to the current ControllerBlock." });
+					} else if (args[1].equalsIgnoreCase("remove")
+							|| args[1].equalsIgnoreCase("s")) {
+						sender.sendMessage(new String[] { "Aliases: remove, s",
+								"Usage: /cblock remove",
+								"Removes the current WorldEdit selection from the current ControllerBlock." });
+					} else if (args[1].equals("reload")) {
+						sender.sendMessage(new String[] {
+								"Usage: /cblock reload",
+								"Reloads the ControllerBlock-4K configuration file." });
 					}
 				}
-			}
-		} else if ((sender instanceof ConsoleCommandSender)) {
-			if (label.equals("cblock")) {
-				if (args[0].equals("reload")) {
-					loadConfig();
-					System.out.println("Config reloaded");
+			} else if (args[0].equals("reload")) {
+				loadConfig();
+				System.out.println("Config reloaded");
+				player.sendMessage("Config reloaded");
+			} else if (args[0].equalsIgnoreCase("add")
+					|| args[0].equalsIgnoreCase("we")
+					|| args[0].equalsIgnoreCase("a")) {
+				if (player == null) {
+					sender.sendMessage("Must be a player");
+					return false;
 				}
+				Selection reg = getwe().getSelection(player);
+				int affected = 0;
+				try {
+					for (Location fpt : new SelectionIterator(reg)) {
+						Block dablock = fpt.getBlock();
+						CBlock conBlock = map.get(player);
+						if (!conBlock.hasBlock(fpt)) {
+							if (conBlock.addBlock(dablock)) {
+								affected++;
+							}
+						}
+					}
+				} catch (IncompleteRegionException e) {
+					Util.sendError(sender,
+							"Incomplete region. Finish your selection first.");
+					return false;
+				} catch (NonBukkitWorld e) {
+					Util.sendError(sender,
+							"WorldEdit gave me a non-Bukkit world. Contact your admin.");
+					return false;
+				}
+				sender.sendMessage(affected
+						+ " blocks added to ControllerBlock");
+			} else if (args[0].equalsIgnoreCase("remove")
+					|| args[0].equalsIgnoreCase("s")) {
+				if (player == null) {
+					sender.sendMessage("Must be a player");
+					return false;
+				}
+				Selection reg = getwe().getSelection(player);
+				int affected = 0;
+				try {
+					for (Location fpt : new SelectionIterator(reg)) {
+						Block dablock = fpt.getBlock();
+						CBlock conBlock = map.get(player);
+						player.sendMessage(String.valueOf(dablock.getData()));
+						if (!conBlock.hasBlock(fpt)) {
+							if (conBlock.delBlock(dablock)) {
+								affected++;
+							}
+						}
+					}
+				} catch (IncompleteRegionException e) {
+					Util.sendError(sender,
+							"Incomplete region. Finish your selection first.");
+					return false;
+				} catch (NonBukkitWorld e) {
+					Util.sendError(sender,
+							"WorldEdit gave me a non-Bukkit world. Contact your admin.");
+					return false;
+				}
+				sender.sendMessage(affected
+						+ " blocks removed from ControllerBlock");
 			}
 		}
 

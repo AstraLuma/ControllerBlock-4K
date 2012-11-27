@@ -3,7 +3,7 @@ package me.operon.controllerblockwe;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 
 public class Util {
 	public static double getDistanceBetweenLocations(Location l1, Location l2) {
@@ -74,7 +74,7 @@ public class Util {
 				&& (l1.getBlockZ() == l2.getBlockZ());
 	}
 	
-	public static void playerSendError(Player player, String msg) {
+	public static void sendError(CommandSender player, String msg) {
 		player.sendMessage("§c"+msg);
 	}
 }
