@@ -146,11 +146,15 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					return false;
 				}
 				Selection reg = getwe().getSelection(player);
+				CBlock conBlock = map.get(player);
 				int affected = 0;
+				if (!this.getPerm().canModify(player, conBlock)) {
+					player.sendMessage("You're not allowed to modify this ControllerBlock");
+					return false;
+				}
 				try {
 					for (Location fpt : new SelectionIterator(reg)) {
 						Block dablock = fpt.getBlock();
-						CBlock conBlock = map.get(player);
 						if (!conBlock.hasBlock(fpt)) {
 							if (conBlock.addBlock(dablock)) {
 								affected++;
@@ -175,11 +179,15 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					return false;
 				}
 				Selection reg = getwe().getSelection(player);
+				CBlock conBlock = map.get(player);
 				int affected = 0;
+				if (!this.getPerm().canModify(player, conBlock)) {
+					player.sendMessage("You're not allowed to modify this ControllerBlock");
+					return false;
+				}
 				try {
 					for (Location fpt : new SelectionIterator(reg)) {
 						Block dablock = fpt.getBlock();
-						CBlock conBlock = map.get(player);
 						player.sendMessage(String.valueOf(dablock.getData()));
 						if (!conBlock.hasBlock(fpt)) {
 							if (conBlock.delBlock(dablock)) {
