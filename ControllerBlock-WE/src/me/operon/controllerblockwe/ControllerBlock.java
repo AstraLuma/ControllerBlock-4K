@@ -521,6 +521,9 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 								.toLowerCase())) {
 							config.setOpt(Config.Option.AnyoneCanDestroyOther,
 									Boolean.valueOf(Boolean.parseBoolean(arg)));
+						} else if (cmd.equals("SqlConnection"
+								.toLowerCase())) {
+							config.setOpt(Config.Option.SqlConnection, arg);
 						}
 					}
 				} else if (c.equals(ConfigSections.adminPlayers)) {
@@ -784,6 +787,14 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 						+ "# Everyone can destroy everyone elses ControllerBlocks\n";
 				dump = dump + "AnyoneCanDestroyOther="
 						+ config.getOpt(Config.Option.AnyoneCanDestroyOther)
+						+ "\n";
+			}
+			if (!config.hasOption(Config.Option.SqlConnection)) {
+				dump = dump + "\n";
+				dump = dump
+						+ "# The JDBC URL to the database\n";
+				dump = dump + "SqlConnection="
+						+ config.getOpt(Config.Option.SqlConnection)
 						+ "\n";
 			}
 		}
