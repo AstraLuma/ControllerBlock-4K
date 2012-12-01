@@ -25,8 +25,8 @@ public class BlockDesc {
 	 * The metadata
 	 */
 	public byte data;
-	//TODO: Inventory
-	//TODO: Other data
+	//TODO: Inventory (If net.minecraft.server.IInventory, org.bukkit.inventory.InventoryHolder)
+	//TODO: Other data -- need to figure out how to do this.
 	
 	/**
 	 * Populates the data
