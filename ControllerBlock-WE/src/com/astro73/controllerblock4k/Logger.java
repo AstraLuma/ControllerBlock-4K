@@ -1,4 +1,4 @@
-package me.operon.controllerblockwe;
+package com.astro73.controllerblock4k;
 
 public class Logger {
 	private java.util.logging.Logger actualLog;

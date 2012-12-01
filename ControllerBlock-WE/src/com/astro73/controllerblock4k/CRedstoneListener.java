@@ -1,4 +1,4 @@
-package me.operon.controllerblockwe;
+package com.astro73.controllerblock4k;
 
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;

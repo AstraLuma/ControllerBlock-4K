@@ -1,4 +1,4 @@
-package me.operon.controllerblockwe;
+package com.astro73.controllerblock4k;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;

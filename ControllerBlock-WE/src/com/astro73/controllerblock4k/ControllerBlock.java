@@ -1,4 +1,4 @@
-package me.operon.controllerblockwe;
+package com.astro73.controllerblock4k;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import me.operon.controllerblockwe.SelectionIterator.NonBukkitWorld;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -26,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.astro73.controllerblock4k.SelectionIterator.NonBukkitWorld;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
