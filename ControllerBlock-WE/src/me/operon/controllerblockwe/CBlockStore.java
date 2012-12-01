@@ -6,9 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 
 /**
  * This handles actually interfacing with the storage system.
@@ -31,8 +34,8 @@ public class CBlockStore {
 	 *             From JDBC
 	 */
 	public CBlockStore(Config config) throws SQLException {
-		conn = DriverManager.getConnection(
-				(String) config.getOpt(Config.Option.SqlConnection));
+		conn = DriverManager.getConnection((String) config
+				.getOpt(Config.Option.SqlConnection));
 
 		update_lord = conn
 				.prepareStatement("UPDATE ControllerBlock_Lord SET world = ?, x = ?, y = ?, z = ?, owner = ?, protection = ? WHERE id = ?;");
@@ -155,8 +158,202 @@ public class CBlockStore {
 			return bd.id;
 		}
 	}
-	
-	public Iterable<CBlock> loadAllData() {
-		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ControllerBlock_Lord;");
+
+	public Iterable<CBlock> loadAllLords(ControllerBlock parent) {
+		try {
+			PreparedStatement stmt = conn
+					.prepareStatement("SELECT * FROM ControllerBlock_Lord;");
+			ResultSet rs = stmt.executeQuery();
+			return new LordIterable(this, rs, parent);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	class LordIterable implements Iterable<CBlock> {
+		private ResultSet rs;
+		private CBlockStore store;
+		ControllerBlock parent;
+
+		public LordIterable(CBlockStore store, ResultSet rs, ControllerBlock p) {
+			this.store = store;
+			this.rs = rs;
+			parent = p;
+		}
+
+		@Override
+		public Iterator<CBlock> iterator() {
+			return new LordIterator(store, rs, parent);
+		}
+	}
+
+	class LordIterator implements Iterator<CBlock> {
+		CBlockStore store;
+		ResultSet rs;
+		boolean checked, hasnext;
+		ControllerBlock parent;
+
+		public LordIterator(CBlockStore store, ResultSet rs, ControllerBlock p) {
+			this.store = store;
+			this.rs = rs;
+			checked = hasnext = false;
+			parent = p;
+		}
+
+		@Override
+		public boolean hasNext() {
+			if (!checked) {
+				try {
+					hasnext = rs.next();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				checked = true;
+			}
+			return hasnext;
+		}
+
+		@Override
+		public CBlock next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			try {
+				long id = rs.getLong("id");
+				String ws = rs.getString("world");
+				int x = rs.getInt("x");
+				int y = rs.getInt("y");
+				int z = rs.getInt("z");
+				String owner = rs.getString("owner");
+				int pi = rs.getInt("protection");
+				CBlock.Protection pl = CBlock.Protection.values()[pi];
+				World world = parent.getServer().getWorld(ws);
+				Location loc = new Location(world, x, y, z);
+				CBlock cb = new CBlock(parent, id, loc, owner, pl);
+				cb.loadSerfs(store);
+				return cb;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			} finally {
+				checked = false;
+			}
+		}
+
+		@Override
+		public void remove() {
+			try {
+				rs.deleteRow();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new IllegalStateException();
+			}
+		}
+	}
+
+	public Iterable<BlockDesc> loadAllSerfs(ControllerBlock parent, long lord) {
+		try {
+			PreparedStatement stmt = conn
+					.prepareStatement("SELECT * FROM ControllerBlock_Serf WHERE lord = ?;");
+			stmt.setLong(0, lord);
+			ResultSet rs = stmt.executeQuery();
+			return new SerfIterable(this, rs, parent);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	class SerfIterable implements Iterable<BlockDesc> {
+		private ResultSet rs;
+		private CBlockStore store;
+		ControllerBlock parent;
+
+		public SerfIterable(CBlockStore store, ResultSet rs, ControllerBlock p) {
+			this.store = store;
+			this.rs = rs;
+			parent = p;
+		}
+
+		@Override
+		public Iterator<BlockDesc> iterator() {
+			return new SerfIterator(store, rs, parent);
+		}
+	}
+
+	class SerfIterator implements Iterator<BlockDesc> {
+		CBlockStore store;
+		ResultSet rs;
+		boolean checked, hasnext;
+		ControllerBlock parent;
+
+		public SerfIterator(CBlockStore store, ResultSet rs, ControllerBlock p) {
+			this.store = store;
+			this.rs = rs;
+			checked = hasnext = false;
+			parent = p;
+		}
+
+		@Override
+		public boolean hasNext() {
+			if (!checked) {
+				try {
+					hasnext = rs.next();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				checked = true;
+			}
+			return hasnext;
+		}
+
+		@Override
+		public BlockDesc next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			try {
+				long id = rs.getLong("id");
+				String ws = rs.getString("world");
+				int x = rs.getInt("x");
+				int y = rs.getInt("y");
+				int z = rs.getInt("z");
+				int mid = rs.getInt("material");
+				byte data = rs.getByte("meta");
+				World world = parent.getServer().getWorld(ws);
+				Location loc = new Location(world, x, y, z);
+				Material mat = Material.getMaterial(mid);
+				BlockDesc cb = new BlockDesc(id, loc, mat, data);
+				return cb;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			} finally {
+				checked = false;
+			}
+		}
+
+		@Override
+		public void remove() {
+			try {
+				rs.deleteRow();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new IllegalStateException();
+			}
+		}
+	}
+
+	public boolean removeLord(Location loc) {
+		return false;
 	}
 }

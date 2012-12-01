@@ -1,7 +1,6 @@
 package me.operon.controllerblockwe;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,8 +9,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,10 +29,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 
 public class ControllerBlock extends JavaPlugin implements Runnable {
 	private static String configFile = "ControllerBlock.ini";
@@ -47,8 +42,6 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(
 			this);
 	
-	private Connection conn = null;
-
 	public boolean blockPhysicsEditCheck = false;
 	private boolean beenLoaded = false;
 	private boolean beenEnabled = false;
@@ -319,11 +312,28 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		}
 		return null;
 	}
-
+	
+	public CBlockStore getStore(CBlockStore store) {
+		if (store == null) {
+			store = getStore();
+		}
+		return store;
+	}
+	
+	public CBlockStore getStore() {
+		try {
+			return new CBlockStore(this.config);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	public void loadData() {
 		int i = 0;
-		CBlockStore store = new CBlockStore(this.config);
-		for (CBlock lord : store.loadAllData()) {
+		CBlockStore store = getStore();
+		for (CBlock lord : store.loadAllLords(this)) {
 			this.blocks.add(lord);
 			i++;
 		}
@@ -332,19 +342,15 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 
 	public void saveData(CBlockStore store, CBlock cblock) {
 		log.debug("Saving ControllerBlock data");
-		if (store == null) {
-			store = new CBlockStore(this.config);
-		}
+		store = getStore(store);
 		cblock.serialize(store);
 	}
 
 	public void deleteData(Location l) {
-		File f1 = new File(getDataFolder() + "/" + "blocks" + "/"
-				+ Util.getSaveFileName(l) + ".dat");
-		boolean success = f1.delete();
+		CBlockStore store = getStore();
+		boolean success = store.removeLord(l);
 		if (!success) {
-			log.warning("Error when attempting to delete block: "
-					+ Util.getSaveFileName(l) + ".dat");
+			log.warning("Error when attempting to delete block: " + l.toString());
 		} else {
 
 		}

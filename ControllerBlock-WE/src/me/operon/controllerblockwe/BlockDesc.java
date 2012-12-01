@@ -35,6 +35,14 @@ public class BlockDesc {
 	 * @param b Metadata
 	 */
 	public BlockDesc(Location l, Material m, byte b) {
+		id = 0;
+		loc = l;
+		data = b;
+		mat = m;
+	}
+
+	public BlockDesc(long i, Location l, Material m, byte b) {
+		id = i;
 		loc = l;
 		data = b;
 		mat = m;

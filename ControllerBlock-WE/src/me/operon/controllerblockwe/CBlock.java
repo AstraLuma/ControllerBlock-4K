@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -31,6 +31,14 @@ public class CBlock implements Iterable<BlockDesc> {
 	
 	public CBlock(ControllerBlock p, Location l, String o, Protection pl) {
 		parent = p;
+		blockLocation = l;
+		owner = o;
+		protectedLevel = pl;
+	}
+
+	public CBlock(ControllerBlock p, long i, Location l, String o, Protection pl) {
+		parent = p;
+		id = i;
 		blockLocation = l;
 		owner = o;
 		protectedLevel = pl;
@@ -251,69 +259,16 @@ public class CBlock implements Iterable<BlockDesc> {
 		}
 	}
 
-/*	public CBlock(ControllerBlock p, int version, String s) {
-		parent = p;
-		String[] args = s.split(",");
-
-		if (((version < 3) && (args.length < 4))
-				|| ((version >= 3) && (args.length < 5))) {
-			parent.log
-					.severe("ERROR: Invalid ControllerBlock description in data file, skipping");
-			return;
-		}
-
-		if (version >= 4) {
-			blockLocation = parseLocation(p.getServer(), args[0], args[1],
-					args[2], args[3]);
-			parent.log.debug("CB Location: "
-					+ Util.formatLocation(blockLocation));
-		}
-
-		blockType = Material.getMaterial(args[3]);
-		int i;
-		if (version >= 3) {
-			owner = args[5];
-			i = 6;
-		} else {
-			owner = null;
-			i = 7;
-		}
-
-		protectedLevel = Protection.PROTECTED;
-		if (i < args.length) {
-			if (args[i].equals("protected")) {
-				protectedLevel = Protection.PROTECTED;
-				i++;
-			}
-			if (args[i].equals("semi-protected")) {
-				protectedLevel = Protection.SEMIPROTECTED;
-				i++;
-			} else if (args[i].equals("unprotected")) {
-				protectedLevel = Protection.UNPROTECTED;
-				i++;
-			}
-		}
-
-		while (i < args.length) {
-			if (version >= 4) {
-				if (args.length - i >= 6) {
-					placedBlocks.add(new BlockDesc(
-							parseLocation(p.getServer(), args[(i++)],
-									args[(i++)], args[(i++)], args[(i++)]),
-							Byte.valueOf(Byte.parseByte(args[(i++)]))));
-				} else {
-					parent.log
-							.severe("ERROR: Block description in save file is corrupt");
-					return;
-				}
-			}
-		}
-	}*/
-
 	public void serialize(CBlockStore store) {
 		this.id = store.storeLordBlock(this.id, this.blockLocation, this.owner, this.protectedLevel);
 		for (BlockDesc b: this.placedBlocks) {
 			store.storeSerfBlock(this.id, b);
+		}
+	}
+
+	public void loadSerfs(CBlockStore store) {
+		for (BlockDesc bd : store.loadAllSerfs(parent, id)) {
+			placedBlocks.add(bd);
 		}
 	}
 
