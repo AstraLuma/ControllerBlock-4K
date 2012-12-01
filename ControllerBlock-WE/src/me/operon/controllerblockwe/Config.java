@@ -52,6 +52,8 @@ public class Config {
 					return Boolean.valueOf(true);
 				case BlockProtectMode:
 					return Boolean.valueOf(true);
+				case SqlConnection:
+					return "jdbc:mysql://localhost/tekkit";
 				case QuickRedstoneCheck:
 			}
 		}

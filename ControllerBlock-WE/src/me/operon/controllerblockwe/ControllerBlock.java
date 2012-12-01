@@ -792,7 +792,8 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			if (!config.hasOption(Config.Option.SqlConnection)) {
 				dump = dump + "\n";
 				dump = dump
-						+ "# The JDBC URL to the database\n";
+						+ "# The JDBC URL to the database\n"
+						+ "# For MySQL, see http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-configuration-properties.html for the format";
 				dump = dump + "SqlConnection="
 						+ config.getOpt(Config.Option.SqlConnection)
 						+ "\n";
