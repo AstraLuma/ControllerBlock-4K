@@ -30,7 +30,7 @@ public class CPlayerListener implements Listener {
 		Player player = e.getPlayer();
 		Block block = e.getClickedBlock();
 		if ((e.getItem() != null)
-				&& (player.getGameMode().equals(GameMode.SURVIVAL))) {
+				&& (player.getGameMode().equals(GameMode.SURVIVAL))) { //XXX: Is this supposed to be CREATIVE?
 			if ((e.getAction().equals(Action.RIGHT_CLICK_BLOCK))
 					&& (e.getItem().getType().equals(Material.STICK))) {
 				if (parent.movingCBlock.containsKey(player.getName())) {

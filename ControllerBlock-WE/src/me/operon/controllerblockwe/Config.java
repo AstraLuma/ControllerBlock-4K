@@ -63,6 +63,23 @@ public class Config {
 	}
 
 	public static enum Option {
-		ControllerBlockType, SemiProtectedControllerBlockType, UnProtectedControllerBlockType, ServerOpIsAdmin, AnyoneCanCreate, AnyoneCanModifyOther, AnyoneCanDestroyOther, MaxBlocksPerController, MaxDistanceFromController, BlockProtectMode, QuickRedstoneCheck, DisableNijikokunPermissions, DisableEditDupeProtection, BlockEditProtectMode, BlockPhysicsProtectMode, BlockFlowProtectMode, PistonProtection;
+		ControllerBlockType, 
+		SemiProtectedControllerBlockType, 
+		UnProtectedControllerBlockType, 
+		ServerOpIsAdmin, 
+		AnyoneCanCreate, 
+		AnyoneCanModifyOther, 
+		AnyoneCanDestroyOther, 
+		MaxBlocksPerController, 
+		MaxDistanceFromController, 
+		BlockProtectMode, 
+		QuickRedstoneCheck, 
+		DisableNijikokunPermissions, 
+		DisableEditDupeProtection, 
+		BlockEditProtectMode, 
+		BlockPhysicsProtectMode, 
+		BlockFlowProtectMode, 
+		PistonProtection,
+		SqlConnection;
 	}
 }

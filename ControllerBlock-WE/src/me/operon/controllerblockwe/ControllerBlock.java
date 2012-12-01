@@ -29,6 +29,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 public class ControllerBlock extends JavaPlugin implements Runnable {
 	private static String configFile = "ControllerBlock.ini";
@@ -41,6 +45,8 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	private final CPlayerListener playerListener = new CPlayerListener(this);
 	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(
 			this);
+	
+	private Connection conn = null;
 
 	public boolean blockPhysicsEditCheck = false;
 	private boolean beenLoaded = false;
@@ -222,7 +228,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		return permissionHandler;
 	}
 
-	public CBlock createCBlock(Location l, String o, byte pl) {
+	public CBlock createCBlock(Location l, String o, CBlock.Protection pl) {
 		CBlock c = new CBlock(this, l, o, pl);
 		blocks.add(c);
 		return c;
@@ -297,12 +303,12 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public CBlock moveControllerBlock(CBlock c, Location l) {
-		Iterator<?> oldBlockDescs = c.getBlocks();
+		Iterator<?> oldBlockDescs = c.iterator();
 		CBlock newC = createCBlock(l, c.getOwner(), c.protectedLevel);
 		newC.setType(c.getType());
 		if (c.isOn()) {
 			while (oldBlockDescs.hasNext()) {
-				newC.addBlock(((BlockDesc) oldBlockDescs.next()).blockLoc
+				newC.addBlock(((BlockDesc) oldBlockDescs.next()).loc
 						.getBlock());
 			}
 			destroyCBlock(c.getLoc(), false);
@@ -373,46 +379,10 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		log.info("Loaded v" + v + " data - " + i + " ControllerBlocks loaded");
 	}
 
-	public void saveData(CBlock cblock) {
+	public void saveData(CBlockStore store, CBlock cblock) {
 		log.debug("Saving ControllerBlock data");
-		String dump = "# v4" + "\n" + cblock.serialize();
-		try {
-			new File(getDataFolder() + "/" + "blocks").mkdir();
-			Writer out = new OutputStreamWriter(new FileOutputStream(
-					getDataFolder() + "/" + "blocks" + "/"
-							+ Util.getSaveFileName(cblock.getLoc()) + ".tmp"),
-					"UTF-8");
-			out.write(dump);
-			out.close();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			log.severe("ERROR: Couldn't open the file to write ControllerBlock data to!");
-			log.severe("       Check your server installation has write access to "
-					+ getDataFolder());
-			e.printStackTrace();
-		} catch (IOException e) {
-			log.severe("ERROR: Couldn't save ControllerBlock data! Possibly corrupted/incomplete data");
-			log.severe("       Check if the disk is full, then edit/finish editing a ControllerBlock");
-			log.severe("       in game to try to save again.");
-			e.printStackTrace();
-		}
-		File newData = new File(getDataFolder() + "/" + "blocks" + "/"
-				+ Util.getSaveFileName(cblock.getLoc()) + ".tmp");
-		File curData = new File(getDataFolder() + "/" + "blocks" + "/"
-				+ Util.getSaveFileName(cblock.getLoc()) + ".dat");
-		if (!curData.delete()) {
-			log.warning("Error when attempting to delete block: "
-					+ Util.getSaveFileName(cblock.getLoc()));
-		}
-		if (!newData.renameTo(curData)) {
-			log.severe("ERROR: Couldn't move temporary save file over current save file");
-			log.severe("       Check that your server installation has write access to: "
-					+ getDataFolder()
-					+ "/"
-					+ "blocks"
-					+ "/"
-					+ Util.getSaveFileName(cblock.getLoc()) + ".dat");
+		if (store == null) {
+			store = new CBlockStore(this.config);
 		}
 	}
 

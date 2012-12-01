@@ -97,20 +97,20 @@ public class CBlockListener implements Runnable, Listener {
 					if (!isRedstone(b.getRelative(BlockFace.UP))) {
 						return;
 					}
-					byte cBType;
+					CBlock.Protection cBType;
 					String cBTypeStr = null;
 					if (b.getType() == parent.getCBlockType()) {
 						cBTypeStr = "protected";
-						cBType = 0;
+						cBType = CBlock.Protection.PROTECTED;
 					} else {
 						if (b.getType() == parent.getSemiProtectedCBlockType()) {
 							cBTypeStr = "semi-protected";
-							cBType = 1;
+							cBType = CBlock.Protection.SEMIPROTECTED;
 						} else {
 							if (b.getType() == parent
 									.getUnProtectedCBlockType()) {
 								cBTypeStr = "unprotected";
-								cBType = 2;
+								cBType = CBlock.Protection.UNPROTECTED;
 							} else {
 								return;
 							}
@@ -158,7 +158,7 @@ public class CBlockListener implements Runnable, Listener {
 						return;
 					}
 
-					if (((conBlock.protectedLevel == 1) || (conBlock.protectedLevel == 2))
+					if (((conBlock.protectedLevel == CBlock.Protection.SEMIPROTECTED) || (conBlock.protectedLevel == CBlock.Protection.UNPROTECTED))
 							&& (!parent.isUnprotectedMaterial(item))) {
 						player.sendMessage("The Material is protected, can't use with (semi-)unprotected ControllerBlocks.");
 						e.setCancelled(true);
@@ -209,8 +209,8 @@ public class CBlockListener implements Runnable, Listener {
 			switch (((BlockProtectMode) parent.getConfigu().getOpt(
 					Config.Option.BlockProtectMode)).ordinal()) {
 				case 1:
-					if ((conBlock.protectedLevel != 0)
-							&& ((conBlock.isOn()) || (conBlock.protectedLevel == 2))) {
+					if ((conBlock.protectedLevel != CBlock.Protection.PROTECTED)
+							&& ((conBlock.isOn()) || (conBlock.protectedLevel == CBlock.Protection.UNPROTECTED))) {
 						break;
 					}
 					player.sendMessage("This block is controlled by a controller block at "
@@ -276,19 +276,19 @@ public class CBlockListener implements Runnable, Listener {
 				if (!isRedstone(b.getRelative(BlockFace.UP))) {
 					return;
 				}
-				byte cBType;
+				CBlock.Protection cBType;
 				String cBTypeStr = null;
 				if (b.getType() == parent.getCBlockType()) {
 					cBTypeStr = "protected";
-					cBType = 0;
+					cBType = CBlock.Protection.PROTECTED;
 				} else {
 					if (b.getType() == parent.getSemiProtectedCBlockType()) {
 						cBTypeStr = "semi-protected";
-						cBType = 1;
+						cBType = CBlock.Protection.SEMIPROTECTED;
 					} else {
 						if (b.getType() == parent.getUnProtectedCBlockType()) {
 							cBTypeStr = "unprotected";
-							cBType = 2;
+							cBType = CBlock.Protection.UNPROTECTED;
 						} else {
 							return;
 						}
@@ -329,7 +329,7 @@ public class CBlockListener implements Runnable, Listener {
 					return;
 				}
 
-				if (((conBlock.protectedLevel == 1) || (conBlock.protectedLevel == 2))
+				if (((conBlock.protectedLevel == CBlock.Protection.SEMIPROTECTED) || (conBlock.protectedLevel == CBlock.Protection.UNPROTECTED))
 						&& (!parent.isUnprotectedMaterial(item))) {
 					player.sendMessage("The Material is protected, can't use with (semi-)unprotected ControllerBlocks.");
 					return;
@@ -514,10 +514,10 @@ public class CBlockListener implements Runnable, Listener {
 			for (@SuppressWarnings("rawtypes")
 			Map.Entry e : parent.map.entrySet()) {
 				@SuppressWarnings("rawtypes")
-				Iterator i = ((CBlock) e.getValue()).getBlocks();
+				Iterator i = ((CBlock) e.getValue()).iterator();
 				while (i.hasNext()) {
 					Block b = Util
-							.getBlockAtLocation(((BlockDesc) i.next()).blockLoc);
+							.getBlockAtLocation(((BlockDesc) i.next()).loc);
 					if (!Util.typeEquals(b.getType(),
 							((CBlock) e.getValue()).getType())) {
 						parent.log
@@ -540,11 +540,11 @@ public class CBlockListener implements Runnable, Listener {
 		for (@SuppressWarnings("rawtypes")
 		Map.Entry e : parent.map.entrySet()) {
 			@SuppressWarnings("rawtypes")
-			Iterator i = ((CBlock) e.getValue()).getBlocks();
+			Iterator i = ((CBlock) e.getValue()).iterator();
 			while (i.hasNext()) {
 				BlockDesc d = (BlockDesc) i.next();
-				Block b = Util.getBlockAtLocation(d.blockLoc);
-				d.blockData = b.getState().getData().getData();
+				Block b = Util.getBlockAtLocation(d.loc);
+				d.data = b.getState().getData().getData();
 			}
 		}
 	}

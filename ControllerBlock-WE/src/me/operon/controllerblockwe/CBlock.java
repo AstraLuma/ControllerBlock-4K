@@ -13,7 +13,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.RedstoneWire;
 
-public class CBlock {
+public class CBlock implements Iterable<BlockDesc> {
 	private Location blockLocation = null;
 	private Material blockType = null;
 	private List<BlockDesc> placedBlocks = new ArrayList<BlockDesc>();
@@ -22,9 +22,14 @@ public class CBlock {
 	private ControllerBlock parent = null;
 	private boolean on = false;
 	private boolean edit = false;
-	public byte protectedLevel = 0;
-
-	public CBlock(ControllerBlock p, Location l, String o, byte pl) {
+	public Protection protectedLevel = Protection.PROTECTED;
+	private long id = 0;
+	
+	public enum Protection {
+		PROTECTED, SEMIPROTECTED, UNPROTECTED
+	}
+	
+	public CBlock(ControllerBlock p, Location l, String o, Protection pl) {
 		parent = p;
 		blockLocation = l;
 		owner = o;
@@ -51,28 +56,29 @@ public class CBlock {
 		return blockLocation;
 	}
 
-	public Iterator<BlockDesc> getBlocks() {
+	@Override
+	public Iterator<BlockDesc> iterator() {
 		return placedBlocks.iterator();
 	}
-
+	
 	public boolean addBlock(Block b) {
 		if (b.getType().equals(blockType)) {
 			Location bloc = b.getLocation();
 			if (placedBlocks.isEmpty()) {
 				placedBlocks
-						.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
+						.add(new BlockDesc(bloc, blockType, Byte.valueOf(b.getData())));
 				return true;
 			}
-			ListIterator<BlockDesc> i = placedBlocks.listIterator();
-			while (i.hasNext()) {
+			;
+			for (ListIterator<BlockDesc> i = placedBlocks.listIterator(); i.hasNext();) {
 				BlockDesc loc = i.next();
-				if (bloc.getBlockY() > loc.blockLoc.getBlockY()) {
+				if (bloc.getBlockY() > loc.loc.getBlockY()) {
 					i.previous();
-					i.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
+					i.add(new BlockDesc(bloc, blockType, Byte.valueOf(b.getData())));
 					return true;
 				}
 			}
-			placedBlocks.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
+			placedBlocks.add(new BlockDesc(bloc, blockType, Byte.valueOf(b.getData())));
 			return true;
 		}
 
@@ -82,14 +88,14 @@ public class CBlock {
 	public boolean delBlock(Block b) {
 		Location u = b.getLocation();
 		for (Iterator<BlockDesc> i = placedBlocks.iterator(); i.hasNext();) {
-			Location t = i.next().blockLoc;
+			Location t = i.next().loc;
 			if (t.equals(u)) {
 				i.remove();
 				CBlock check = parent.getControllerBlockFor(this, u, null,
 						Boolean.valueOf(true));
 				if (check != null) {
 					b.setType(check.blockType);
-					b.setData(check.getBlock(u).blockData);
+					b.setData(check.getBlock(u).data);
 				}
 				return true;
 			}
@@ -102,10 +108,8 @@ public class CBlock {
 	}
 
 	public BlockDesc getBlock(Location l) {
-		Iterator<BlockDesc> i = placedBlocks.iterator();
-		while (i.hasNext()) {
-			BlockDesc d = i.next();
-			if (d.blockLoc.equals(l)) {
+		for (BlockDesc d : placedBlocks) {
+			if (d.loc.equals(l)) {
 				return d;
 			}
 		}
@@ -117,11 +121,9 @@ public class CBlock {
 	}
 
 	public void updateBlock(Block b) {
-		Iterator<BlockDesc> i = placedBlocks.iterator();
-		while (i.hasNext()) {
-			BlockDesc d = i.next();
-			if (d.blockLoc.equals(b.getLocation())) {
-				d.blockData = b.getState().getData().getData();
+		for (BlockDesc d : placedBlocks) {
+			if (d.loc.equals(b.getLocation())) {
+				d.data = b.getState().getData().getData();
 				return;
 			}
 		}
@@ -136,7 +138,7 @@ public class CBlock {
 		if (edit) {
 			turnOn();
 		} else {
-			parent.saveData(this);
+			parent.saveData(null, this);
 			doRedstoneCheck();
 		}
 	}
@@ -192,10 +194,8 @@ public class CBlock {
 	}
 
 	public void turnOff() {
-		Iterator<BlockDesc> i = placedBlocks.iterator();
-		while (i.hasNext()) {
-			BlockDesc d = i.next();
-			Location loc = d.blockLoc;
+		for (BlockDesc d : placedBlocks) {
+			Location loc = d.loc;
 			CBlock check = parent.getControllerBlockFor(this, loc, null,
 					Boolean.valueOf(true));
 			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(),
@@ -204,8 +204,8 @@ public class CBlock {
 
 			if (check != null) {
 				cur.setTypeIdAndData(check.blockType.getId(),
-						check.getBlock(loc).blockData, applyPhysics);
-			} else if (protectedLevel == 0) {
+						check.getBlock(loc).data, applyPhysics);
+			} else if (protectedLevel == Protection.PROTECTED) {
 				cur.setType(Material.AIR);
 			}
 		}
@@ -213,13 +213,12 @@ public class CBlock {
 	}
 
 	public void turnOn() {
-		for (Iterator<BlockDesc> i = placedBlocks.iterator(); i.hasNext();) {
-			BlockDesc b = i.next();
-			Location loc = b.blockLoc;
+		for (BlockDesc b : placedBlocks) {
+			Location loc = b.loc;
 			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(),
 					loc.getBlockY(), loc.getBlockZ());
 			boolean applyPhysics = true;
-			if (protectedLevel == 0) {
+			if (protectedLevel == Protection.PROTECTED) {
 				if ((cur.getType().equals(Material.SAND))
 						|| (cur.getType().equals(Material.GRAVEL))
 						|| (cur.getType().equals(Material.TORCH))
@@ -233,28 +232,26 @@ public class CBlock {
 					applyPhysics = false;
 				}
 			}
-			cur.setTypeIdAndData(blockType.getId(), b.blockData, applyPhysics);
+			cur.setTypeIdAndData(blockType.getId(), b.data, applyPhysics);
 		}
 		on = true;
 	}
 
 	public void turnOn(Location l) {
-		Iterator<BlockDesc> i = placedBlocks.iterator();
-		while (i.hasNext()) {
-			BlockDesc b = i.next();
-			if (l.equals(b.blockLoc)) {
+		for (BlockDesc b : placedBlocks) {
+			if (l.equals(b.loc)) {
 				Block cur = Util.getBlockAtLocation(l);
 				boolean applyPhysics = true;
-				if (protectedLevel == 0) {
+				if (protectedLevel == Protection.PROTECTED) {
 					applyPhysics = false;
 				}
-				cur.setTypeIdAndData(blockType.getId(), b.blockData,
+				cur.setTypeIdAndData(blockType.getId(), b.data,
 						applyPhysics);
 			}
 		}
 	}
 
-	public CBlock(ControllerBlock p, int version, String s) {
+/*	public CBlock(ControllerBlock p, int version, String s) {
 		parent = p;
 		String[] args = s.split(",");
 
@@ -282,17 +279,17 @@ public class CBlock {
 			i = 7;
 		}
 
-		protectedLevel = 0;
+		protectedLevel = Protection.PROTECTED;
 		if (i < args.length) {
 			if (args[i].equals("protected")) {
-				protectedLevel = 0;
+				protectedLevel = Protection.PROTECTED;
 				i++;
 			}
 			if (args[i].equals("semi-protected")) {
-				protectedLevel = 1;
+				protectedLevel = Protection.SEMIPROTECTED;
 				i++;
 			} else if (args[i].equals("unprotected")) {
-				protectedLevel = 2;
+				protectedLevel = Protection.UNPROTECTED;
 				i++;
 			}
 		}
@@ -311,43 +308,13 @@ public class CBlock {
 				}
 			}
 		}
+	}*/
+
+	public void serialize(CBlockStore store) {
+		this.id = store.storeLordBlock(this.id, this.blockLocation, this.owner, this.protectedLevel);
+		for (BlockDesc b: this.placedBlocks) {
+			store.storeSerfBlock(this.id, b);
+		}
 	}
 
-	public String serialize() {
-		String result = loc2str(blockLocation);
-		result = result + "," + blockType;
-		result = result + "," + owner;
-		if (protectedLevel == 1) {
-			result = result + ",semi-protected";
-		} else if (protectedLevel == 2) {
-			result = result + ",unprotected";
-		}
-		Iterator<BlockDesc> i = placedBlocks.iterator();
-		while (i.hasNext()) {
-			BlockDesc b = i.next();
-			result = result + "," + loc2str(b.blockLoc);
-			result = result + "," + Byte.toString(b.blockData);
-		}
-		return result;
-	}
-
-	public Location parseLocation(Server server, String worldName, String X,
-			String Y, String Z) {
-		return new Location(server.getWorld(worldName), Integer.parseInt(X),
-				Integer.parseInt(Y), Integer.parseInt(Z));
-	}
-
-	public String loc2str(Location l) {
-		if (l == null) {
-			parent.log
-					.severe("ERROR: null location while trying to save CBlock at "
-							+ loc2str(blockLocation));
-		}
-		if (l.getWorld() == null) {
-			parent.log
-					.severe("ERROR: null world in location while trying to save CBlock");
-		}
-		return l.getWorld().getName() + "," + l.getBlockX() + ","
-				+ l.getBlockY() + "," + l.getBlockZ();
-	}
 }
