@@ -11,6 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -71,8 +72,11 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	public void onLoad() {
 		if (!beenLoaded) {
 			log.info(getDescription().getVersion()
-					+ " by Zero9195 (Original by Hell_Fire). Updated for R6 by Sorklin, Edited for WorldEdit by Techzune, Edited for Four Kingdoms by astronouth7303");
-			checkPluginDataDir();
+					+ " by Zero9195 (Original by Hell_Fire),"
+					+ " Updated for R6 by Sorklin,"
+					+ " Edited for WorldEdit by Techzune,"
+					+ " Edited for Four Kingdoms by astronouth7303"
+					);
 			loadConfig();
 			beenLoaded = true;
 		}
@@ -303,13 +307,12 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public CBlock moveControllerBlock(CBlock c, Location l) {
-		Iterator<?> oldBlockDescs = c.iterator();
+		Iterator<BlockDesc> oldBlockDescs = c.iterator();
 		CBlock newC = createCBlock(l, c.getOwner(), c.protectedLevel);
 		newC.setType(c.getType());
 		if (c.isOn()) {
 			while (oldBlockDescs.hasNext()) {
-				newC.addBlock(((BlockDesc) oldBlockDescs.next()).loc
-						.getBlock());
+				newC.addBlock(oldBlockDescs.next().loc.getBlock());
 			}
 			destroyCBlock(c.getLoc(), false);
 			return newC;
@@ -317,66 +320,14 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		return null;
 	}
 
-	private void checkPluginDataDir() {
-		log.debug("Checking plugin data directory " + getDataFolder());
-		File dir = getDataFolder();
-		if (!dir.isDirectory()) {
-			log.debug("Isn't a directory");
-			if (!dir.mkdir()) {
-				log.severe("Couldn't create plugin data directory "
-						+ getDataFolder());
-				return;
-			}
-		}
-	}
-
 	public void loadData() {
-		int v = 1;
-		String s = "";
-		Integer i = Integer.valueOf(0);
-		Integer l = Integer.valueOf(1);
-		File folder = new File(getDataFolder() + "/" + "blocks");
-		File[] listofBlocks = folder.listFiles();
-		if (listofBlocks != null) {
-			for (int i1 = 0; i1 < listofBlocks.length; i1++) {
-				if (listofBlocks[i1].isFile()) {
-					v = 1;
-					s = "";
-					try {
-						BufferedReader in = new BufferedReader(
-								new InputStreamReader(new FileInputStream(
-										getDataFolder() + "/" + "blocks" + "/"
-												+ listofBlocks[i1].getName()),
-										"UTF-8"));
-						String version = in.readLine().trim();
-						if (version.equals("# v2")) {
-							v = 2;
-						} else if (version.equals("# v3")) {
-							v = 3;
-						} else if (version.equals("# v4")) {
-							v = 4;
-						} else {
-							l = Integer.valueOf(l.intValue() - 1);
-						}
-						if ((s = in.readLine()) != null) {
-							if (!s.trim().isEmpty()) {
-								CBlock newBlock = new CBlock(this, v, s.trim());
-								if (newBlock.getLoc() != null) {
-									blocks.add(newBlock);
-								}
-							}
-						}
-						in.close();
-					} catch (UnsupportedEncodingException e) {
-						e.printStackTrace();
-					} catch (FileNotFoundException localFileNotFoundException) {
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+		int i = 0;
+		CBlockStore store = new CBlockStore(this.config);
+		for (CBlock lord : store.loadAllData()) {
+			this.blocks.add(lord);
+			i++;
 		}
-		log.info("Loaded v" + v + " data - " + i + " ControllerBlocks loaded");
+		log.info("Loaded SQL data - " + i + " ControllerBlocks loaded");
 	}
 
 	public void saveData(CBlockStore store, CBlock cblock) {
@@ -384,6 +335,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		if (store == null) {
 			store = new CBlockStore(this.config);
 		}
+		cblock.serialize(store);
 	}
 
 	public void deleteData(Location l) {

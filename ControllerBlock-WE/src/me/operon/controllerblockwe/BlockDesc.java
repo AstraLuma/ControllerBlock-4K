@@ -10,7 +10,7 @@ import org.bukkit.Material;
  */
 public class BlockDesc {
 	/**
-	 * The store ID
+	 * The storage ID
 	 */
 	public long id;
 	/**
