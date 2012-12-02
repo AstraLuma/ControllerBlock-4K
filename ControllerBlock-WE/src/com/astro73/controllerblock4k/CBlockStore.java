@@ -69,18 +69,17 @@ public class CBlockStore {
 			CBlock.Protection pl) {
 		PreparedStatement stmt = id == 0 ? insert_lord : update_lord;
 		try {
-			stmt.setString(0, loc.getWorld().getName());
-			stmt.setInt(1, loc.getBlockX());
-			stmt.setInt(2, loc.getBlockY());
-			stmt.setInt(3, loc.getBlockZ());
-			stmt.setString(4, owner);
-			stmt.setString(5, pl.name());
-			stmt.setString(5, pl.name());
+			stmt.setString(1, loc.getWorld().getName());
+			stmt.setInt   (2, loc.getBlockX());
+			stmt.setInt   (3, loc.getBlockY());
+			stmt.setInt   (4, loc.getBlockZ());
+			stmt.setString(5, owner);
+			stmt.setString(6, pl.name());
 			if (id == 0) {
 				// INSERT new block
 			} else {
 				// UPDATE existing block
-				stmt.setLong(6, id);
+				stmt.setLong(7, id);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -120,18 +119,18 @@ public class CBlockStore {
 	public long storeSerfBlock(long lord, BlockDesc bd) {
 		PreparedStatement stmt = bd.id == 0 ? insert_serf : update_serf;
 		try {
-			stmt.setString(0, bd.loc.getWorld().getName());
-			stmt.setInt(1, bd.loc.getBlockX());
-			stmt.setInt(2, bd.loc.getBlockY());
-			stmt.setInt(3, bd.loc.getBlockZ());
-			stmt.setInt(4, bd.mat.getId());
-			stmt.setByte(5, bd.data);
-			stmt.setLong(6, lord);
+			stmt.setString(1, bd.loc.getWorld().getName());
+			stmt.setInt   (2, bd.loc.getBlockX());
+			stmt.setInt   (3, bd.loc.getBlockY());
+			stmt.setInt   (4, bd.loc.getBlockZ());
+			stmt.setInt   (5, bd.mat.getId());
+			stmt.setByte  (6, bd.data);
+			stmt.setLong  (7, lord);
 			if (bd.id == 0) {
 				// INSERT new block
 			} else {
 				// UPDATE existing block
-				stmt.setLong(7, bd.id);
+				stmt.setLong(8, bd.id);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -228,8 +227,8 @@ public class CBlockStore {
 				int y = rs.getInt("y");
 				int z = rs.getInt("z");
 				String owner = rs.getString("owner");
-				int pi = rs.getInt("protection");
-				CBlock.Protection pl = CBlock.Protection.values()[pi];
+				String ps = rs.getString("protection");
+				CBlock.Protection pl = CBlock.Protection.valueOf(ps);
 				World world = parent.getServer().getWorld(ws);
 				Location loc = new Location(world, x, y, z);
 				CBlock cb = new CBlock(parent, id, loc, owner, pl);
@@ -260,7 +259,7 @@ public class CBlockStore {
 		try {
 			PreparedStatement stmt = conn
 					.prepareStatement("SELECT * FROM ControllerBlock_Serf WHERE lord = ?;");
-			stmt.setLong(0, lord);
+			stmt.setLong(1, lord);
 			ResultSet rs = stmt.executeQuery();
 			return new SerfIterable(this, rs, parent);
 		} catch (SQLException e) {

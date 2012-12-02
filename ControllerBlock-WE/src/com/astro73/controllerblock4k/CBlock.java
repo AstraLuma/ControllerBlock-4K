@@ -223,8 +223,7 @@ public class CBlock implements Iterable<BlockDesc> {
 	public void turnOn() {
 		for (BlockDesc b : placedBlocks) {
 			Location loc = b.loc;
-			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(),
-					loc.getBlockY(), loc.getBlockZ());
+			Block cur = loc.getWorld().getBlockAt(loc);
 			boolean applyPhysics = true;
 			if (protectedLevel == Protection.PROTECTED) {
 				if ((cur.getType().equals(Material.SAND))
@@ -240,7 +239,7 @@ public class CBlock implements Iterable<BlockDesc> {
 					applyPhysics = false;
 				}
 			}
-			cur.setTypeIdAndData(blockType.getId(), b.data, applyPhysics);
+			cur.setTypeIdAndData(b.mat.getId() , b.data, applyPhysics);
 		}
 		on = true;
 	}

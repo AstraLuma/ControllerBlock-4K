@@ -15,9 +15,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -26,9 +26,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.astro73.controllerblock4k.SelectionIterator.NonBukkitWorld;
+import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.regions.Region;
 
 public class ControllerBlock extends JavaPlugin implements Runnable {
 	private static String configFile = "ControllerBlock.ini";
@@ -41,7 +45,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	private final CPlayerListener playerListener = new CPlayerListener(this);
 	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(
 			this);
-	
+
 	public boolean blockPhysicsEditCheck = false;
 	private boolean beenLoaded = false;
 	private boolean beenEnabled = false;
@@ -68,8 +72,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					+ " by Zero9195 (Original by Hell_Fire),"
 					+ " Updated for R6 by Sorklin,"
 					+ " Edited for WorldEdit by Techzune,"
-					+ " Edited for Four Kingdoms by astronouth7303"
-					);
+					+ " Edited for Four Kingdoms by astronouth7303");
 			loadConfig();
 			beenLoaded = true;
 		}
@@ -108,7 +111,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			beenEnabled = true;
 		}
 	}
-	
+
 	public boolean onCommand(CommandSender sender, Command command,
 			String label, String[] args) {
 		Player player = null;
@@ -140,7 +143,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			} else if (args[0].equals("reload")) {
 				loadConfig();
 				System.out.println("Config reloaded");
-				player.sendMessage("Config reloaded");
+				sender.sendMessage("Config reloaded");
 			} else if (args[0].equalsIgnoreCase("add")
 					|| args[0].equalsIgnoreCase("we")
 					|| args[0].equalsIgnoreCase("a")) {
@@ -148,29 +151,34 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					sender.sendMessage("Must be a player");
 					return false;
 				}
-				Selection reg = getwe().getSelection(player);
-				CBlock conBlock = map.get(player);
-				int affected = 0;
-				if (!this.getPerm().canModify(player, conBlock)) {
-					player.sendMessage("You're not allowed to modify this ControllerBlock");
-					return false;
-				}
+				WorldEditPlugin wep = getwe();
+				LocalSession ses = wep.getSession(player);
+				World world = ((BukkitWorld)ses.getSelectionWorld()).getWorld();
+				Region reg;
 				try {
-					for (Location fpt : new SelectionIterator(reg)) {
-						Block dablock = fpt.getBlock();
-						if (!conBlock.hasBlock(fpt)) {
-							if (conBlock.addBlock(dablock)) {
-								affected++;
-							}
-						}
-					}
+					reg = ses.getSelection(ses.getSelectionWorld());
 				} catch (IncompleteRegionException e) {
 					Util.sendError(sender,
 							"Incomplete region. Finish your selection first.");
 					return false;
-				} catch (NonBukkitWorld e) {
-					Util.sendError(sender,
-							"WorldEdit gave me a non-Bukkit world. Contact your admin.");
+				}
+				if (reg == null) {
+					player.sendMessage("No region found");
+					return false;
+				}
+				CBlock conBlock = map.get(player);
+				int affected = 0;
+				for (BlockVector bv : reg) {
+					Location loc = new Location(world, bv.getX(), bv.getY(), bv.getZ());
+					Block dablock = loc.getBlock();
+					if (!conBlock.hasBlock(loc)) {
+						if (conBlock.addBlock(dablock)) {
+							affected++;
+						}
+					}
+				}
+				if (!this.getPerm().canModify(player, conBlock)) {
+					player.sendMessage("You're not allowed to modify this ControllerBlock");
 					return false;
 				}
 				sender.sendMessage(affected
@@ -312,14 +320,14 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		}
 		return null;
 	}
-	
+
 	public CBlockStore getStore(CBlockStore store) {
 		if (store == null) {
 			store = getStore();
 		}
 		return store;
 	}
-	
+
 	public CBlockStore getStore() {
 		try {
 			return new CBlockStore(this.config);
@@ -329,7 +337,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			return null;
 		}
 	}
-	
+
 	public void loadData() {
 		int i = 0;
 		CBlockStore store = getStore();
@@ -350,7 +358,8 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		CBlockStore store = getStore();
 		boolean success = store.removeLord(l);
 		if (!success) {
-			log.warning("Error when attempting to delete block: " + l.toString());
+			log.warning("Error when attempting to delete block: "
+					+ l.toString());
 		} else {
 
 		}
@@ -521,8 +530,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 								.toLowerCase())) {
 							config.setOpt(Config.Option.AnyoneCanDestroyOther,
 									Boolean.valueOf(Boolean.parseBoolean(arg)));
-						} else if (cmd.equals("SqlConnection"
-								.toLowerCase())) {
+						} else if (cmd.equals("SqlConnection".toLowerCase())) {
 							config.setOpt(Config.Option.SqlConnection, arg);
 						}
 					}
@@ -579,8 +587,8 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		CBlockType = ((Material) config
-				.getOpt(Config.Option.ControllerBlockType));
+		CBlockType = (Material) config
+				.getOpt(Config.Option.ControllerBlockType);
 		log.info("Using " + CBlockType + " (" + CBlockType.getId()
 				+ ") as ControllerBlock, loaded " + DisallowedTypesAll.size()
 				+ " disallowed types from config");
@@ -793,10 +801,9 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 				dump = dump + "\n";
 				dump = dump
 						+ "# The JDBC URL to the database\n"
-						+ "# For MySQL, see http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-configuration-properties.html for the format";
+						+ "# For MySQL, see http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-configuration-properties.html for the format\n";
 				dump = dump + "SqlConnection="
-						+ config.getOpt(Config.Option.SqlConnection)
-						+ "\n";
+						+ config.getOpt(Config.Option.SqlConnection) + "\n";
 			}
 		}
 		if (dump.length() != 0) {

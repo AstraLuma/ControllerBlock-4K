@@ -3,9 +3,9 @@ description: Toggle blocks on and off with redstone
 author: Hell_Fire
 authors: [Zero9195, Sorklin, Techzune, astronouth7303]
 main: com.astro73.controllerblock4k.ControllerBlock
-version: 2
+version: 1
 database: true
-depend: [worldedit]
+depend: [WorldEdit]
 commands:
     cblock:
         description: Entry point to ControllerBlock, see /cblock help.

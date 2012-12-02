@@ -2,9 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="jars/ChatManager.jar"/>
-	<classpathentry kind="lib" path="jars/Modifyworld.jar"/>
-	<classpathentry kind="lib" path="jars/PermissionsEx.jar"/>
 	<classpathentry kind="lib" path="jars/Tekkit.jar" sourcepath="/Bukkit/src/main/java">
 		<attributes>
 			<attribute name="javadoc_location" value="http://jd.bukkit.org/apidocs/"/>
@@ -15,31 +12,6 @@
 			<attribute name="javadoc_location" value="http://jd.evil-co.de/worldedit/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="jars/AdditionalPipes-2.1.3-MCPC1.2.5-r3.zip"/>
-	<classpathentry kind="lib" path="jars/advancedMachines_4.0_bukkit.zip"/>
-	<classpathentry kind="lib" path="jars/BalkonsWeaponMod1.2.5.jar"/>
-	<classpathentry kind="lib" path="jars/buildcraft-2.2.14-mcpc1.2.5-r8.zip"/>
-	<classpathentry kind="lib" path="jars/CCPlugin.jar"/>
-	<classpathentry kind="lib" path="jars/CodeChickenCore-Bukkit 0.5.3r3.zip"/>
-	<classpathentry kind="lib" path="jars/ComputerCraftBukkit1.41.zip"/>
-	<classpathentry kind="lib" path="jars/EE2ServerV1.4.6.5-bukkit-mcpc-1.2.5-r5.zip"/>
-	<classpathentry kind="lib" path="jars/EnderStorage-Bukkit 1.1.3r2.zip"/>
-	<classpathentry kind="lib" path="jars/immibis-core_49.1.1_for_1.2.5-bukkit.jar"/>
-	<classpathentry kind="lib" path="jars/industrialcraft2-1.103-mcpc1.2.5-r2.zip"/>
-	<classpathentry kind="lib" path="jars/mffs_rev7_for_1.2.5-bukkit.zip"/>
-	<classpathentry kind="lib" path="jars/mod_chargingbench-server-1.95b-mcpc1.2.5-r2.zip"/>
-	<classpathentry kind="lib" path="jars/mod_compactsolars-server-2.3.2.10-bukkit-mcpc-1.2.5.zip"/>
-	<classpathentry kind="lib" path="jars/mod_IC2NuclearControl-1.1.10b-mcpc-r1.zip"/>
-	<classpathentry kind="lib" path="jars/mod_ironchests-server-3.8.0.40-bukkit-mcpc-1.2.5.zip"/>
-	<classpathentry kind="lib" path="jars/mod_NetherOres.jar"/>
-	<classpathentry kind="lib" path="jars/NotEnoughItems-Bukkit 1.2.2.3r3.zip"/>
-	<classpathentry kind="lib" path="jars/PowerConverters-1.3.4-mcpc78-r1.zip"/>
-	<classpathentry kind="lib" path="jars/Railcraft-5.4.7-MCPC-1.2.5-r7.zip"/>
-	<classpathentry kind="lib" path="jars/redpower-all-2.0p5b2-mcpc1.2.5-r19.zip"/>
-	<classpathentry kind="lib" path="jars/tubestuff_49.1.2_for_1.2.5-bukkit.jar"/>
-	<classpathentry kind="lib" path="jars/WR-CBE Addons-Bukkit 1.2.2.3.zip"/>
-	<classpathentry kind="lib" path="jars/WR-CBE Core-Bukkit 1.2.2.3r2.zip.zip"/>
-	<classpathentry kind="lib" path="jars/WR-CBE RedPower-Bukkit 1.2.2.1.zip"/>
-	<classpathentry kind="lib" path="jars/zdimensional-anchor_rev3.2_for_1.2.5-bukkit.jar"/>
+	<classpathentry kind="lib" path="jars/PermissionsEx.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
