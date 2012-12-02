@@ -446,8 +446,8 @@ public class CBlockListener implements Runnable, Listener {
 				return;
 			}
 			Player player = getPlayerEditing(conBlock);
-			parent.log
-					.debug("Block at "
+			parent.getLogger()
+					.info("Block at "
 							+ Util.formatLocation(e.getToBlock().getLocation())
 							+ " was drowned while editing and removed from a controller");
 			conBlock.delBlock(e.getToBlock());

@@ -36,7 +36,6 @@ import com.sk89q.worldedit.regions.Region;
 
 public class ControllerBlock extends JavaPlugin implements Runnable {
 	private static String configFile = "ControllerBlock.ini";
-	public Logger log = new Logger(this, "Minecraft");
 	private Config config = new Config();
 	private PermissionHandler permissionHandler = new PermissionHandler(this);
 	private final CBlockListener blockListener = new CBlockListener(this);
@@ -68,7 +67,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 
 	public void onLoad() {
 		if (!beenLoaded) {
-			log.info(getDescription().getVersion()
+			getLogger().info(getDescription().getVersion()
 					+ " by Zero9195 (Original by Hell_Fire),"
 					+ " Updated for R6 by Sorklin,"
 					+ " Edited for WorldEdit by Techzune,"
@@ -84,16 +83,16 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			getServer().getPluginManager().registerEvents(playerListener, this);
 			if (getServer().getScheduler().scheduleSyncRepeatingTask(this,
 					blockListener, 1L, 1L) == -1) {
-				log.warning("Scheduling BlockListener anti-dupe check failed, falling back to old BLOCK_PHYSICS event");
+				getLogger().warning("Scheduling BlockListener anti-dupe check failed, falling back to old BLOCK_PHYSICS event");
 				blockPhysicsEditCheck = true;
 			}
 			if (config.getBool(Config.Option.DisableEditDupeProtection)) {
-				log.warning("Edit dupe protection has been disabled, you're on your own from here");
+				getLogger().warning("Edit dupe protection has been disabled, you're on your own from here");
 			}
 			if (!config.getBool(Config.Option.QuickRedstoneCheck)) {
 				if (getServer().getScheduler().scheduleSyncRepeatingTask(this,
 						checkRunner, 1L, 1L) == -1) {
-					log.warning("Scheduling CBlockRedstoneCheck task failed, falling back to quick REDSTONE_CHANGE event");
+					getLogger().warning("Scheduling CBlockRedstoneCheck task failed, falling back to quick REDSTONE_CHANGE event");
 					config.setOpt(Config.Option.QuickRedstoneCheck,
 							Boolean.valueOf(true));
 				}
@@ -104,10 +103,10 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			}
 			if (getServer().getScheduler().scheduleSyncDelayedTask(this, this,
 					1L) == -1) {
-				log.severe("Failed to schedule loadData, loading now, will probably not work with multiworld plugins");
+				getLogger().severe("Failed to schedule loadData, loading now");
 				loadData();
 			}
-			log.info("Events registered");
+			getLogger().info("Events registered");
 			beenEnabled = true;
 		}
 	}
@@ -344,11 +343,11 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			this.blocks.add(lord);
 			i++;
 		}
-		log.info("Loaded SQL data - " + i + " ControllerBlocks loaded");
+		getLogger().info("Loaded SQL data - " + i + " ControllerBlocks loaded");
 	}
 
 	public void saveData(CBlockStore store, CBlock cblock) {
-		log.debug("Saving ControllerBlock data");
+		getLogger().fine("Saving ControllerBlock data");
 		store = getStore(store);
 		cblock.serialize(store);
 	}
@@ -357,7 +356,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		CBlockStore store = getStore();
 		boolean success = store.removeLord(l);
 		if (!success) {
-			log.warning("Error when attempting to delete block: "
+			getLogger().warning("Error when attempting to delete block: "
 					+ l.toString());
 		} else {
 
@@ -408,7 +407,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		} else {
 			def = "it has been skipped";
 		}
-		log.warning("Couldn't parse " + cmd + " " + arg + " on line " + line
+		getLogger().warning("Couldn't parse " + cmd + " " + arg + " on line " + line
 				+ ", " + def);
 	}
 
@@ -554,7 +553,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					if (oldConfigLine.intValue() == -1) {
 						CBlockType = Material.getMaterial(s.trim());
 						if (CBlockType == null) {
-							log.warning("Couldn't parse ControllerBlock type "
+							getLogger().warning("Couldn't parse ControllerBlock type "
 									+ s.trim() + ", defaulting to IRON_BLOCK");
 							CBlockType = Material.IRON_BLOCK;
 						}
@@ -565,7 +564,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					} else {
 						Material m = Material.getMaterial(s.trim());
 						if (m == null) {
-							log.warning("Couldn't parse disallowed type "
+							getLogger().warning("Couldn't parse disallowed type "
 									+ s.trim() + ", it has been skipped");
 						} else {
 							DisallowedTypesAll.add(m);
@@ -580,7 +579,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
-			log.warning("No config found, using defaults, writing defaults out to "
+			getLogger().warning("No config found, using defaults, writing defaults out to "
 					+ configFile);
 			writeConfig(null);
 		} catch (IOException e) {
@@ -588,7 +587,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		}
 		CBlockType = (Material) config
 				.getOpt(Config.Option.ControllerBlockType);
-		log.info("Using " + CBlockType + " (" + CBlockType.getId()
+		getLogger().info("Using " + CBlockType + " (" + CBlockType.getId()
 				+ ") as ControllerBlock, loaded " + DisallowedTypesAll.size()
 				+ " disallowed types from config");
 	}
