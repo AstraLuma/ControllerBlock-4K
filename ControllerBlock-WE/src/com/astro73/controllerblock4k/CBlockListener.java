@@ -502,7 +502,6 @@ public class CBlockListener implements Runnable, Listener {
 
 	public void run() {
 		if (!parent.getConfig().getBoolean("DisableEditDupeProtection")) {
-			parent.getLogger().warning("Dupe checking disabled");
 			//FIXME: What is this checking exactly?
 /*			for (Map.Entry<CBlock> e : parent.map.entrySet()) {
 				Iterator<BlockDesc> i = e.getValue().iterator();

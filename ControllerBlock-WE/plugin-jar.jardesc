@@ -12,7 +12,8 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <file path="/ControllerBlock-WE/README.md"/>
-        <file path="/ControllerBlock-WE/plugin.yml"/>
         <javaElement handleIdentifier="=ControllerBlock-WE/src"/>
+        <file path="/ControllerBlock-WE/plugin.yml"/>
+        <file path="/ControllerBlock-WE/config.yml"/>
     </selectedElements>
 </jardesc>
