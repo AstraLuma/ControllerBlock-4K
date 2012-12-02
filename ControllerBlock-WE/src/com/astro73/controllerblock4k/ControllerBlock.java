@@ -25,13 +25,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.astro73.controllerblock4k.SelectionIterator.NonBukkitWorld;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 import com.sk89q.worldedit.regions.Region;
 
 public class ControllerBlock extends JavaPlugin implements Runnable {
@@ -150,6 +148,11 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					sender.sendMessage("Must be a player");
 					return false;
 				}
+				CBlock conBlock = map.get(player);
+				if (!this.getPerm().canModify(player, conBlock)) {
+					player.sendMessage("You're not allowed to modify this ControllerBlock");
+					return false;
+				}
 				WorldEditPlugin wep = getwe();
 				LocalSession ses = wep.getSession(player);
 				World world = ((BukkitWorld)ses.getSelectionWorld()).getWorld();
@@ -165,7 +168,6 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					player.sendMessage("No region found");
 					return false;
 				}
-				CBlock conBlock = map.get(player);
 				int affected = 0;
 				for (BlockVector bv : reg) {
 					Location loc = new Location(world, bv.getX(), bv.getY(), bv.getZ());
@@ -176,10 +178,6 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 						}
 					}
 				}
-				if (!this.getPerm().canModify(player, conBlock)) {
-					player.sendMessage("You're not allowed to modify this ControllerBlock");
-					return false;
-				}
 				sender.sendMessage(affected
 						+ " blocks added to ControllerBlock");
 			} else if (args[0].equalsIgnoreCase("remove")
@@ -188,31 +186,36 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					sender.sendMessage("Must be a player");
 					return false;
 				}
-				Selection reg = getwe().getSelection(player);
 				CBlock conBlock = map.get(player);
-				int affected = 0;
 				if (!this.getPerm().canModify(player, conBlock)) {
 					player.sendMessage("You're not allowed to modify this ControllerBlock");
 					return false;
 				}
+				WorldEditPlugin wep = getwe();
+				LocalSession ses = wep.getSession(player);
+				World world = ((BukkitWorld)ses.getSelectionWorld()).getWorld();
+				Region reg;
 				try {
-					for (Location fpt : new SelectionIterator(reg)) {
-						Block dablock = fpt.getBlock();
-						player.sendMessage(String.valueOf(dablock.getData()));
-						if (!conBlock.hasBlock(fpt)) {
-							if (conBlock.delBlock(dablock)) {
-								affected++;
-							}
-						}
-					}
+					reg = ses.getSelection(ses.getSelectionWorld());
 				} catch (IncompleteRegionException e) {
 					Util.sendError(sender,
 							"Incomplete region. Finish your selection first.");
 					return false;
-				} catch (NonBukkitWorld e) {
-					Util.sendError(sender,
-							"WorldEdit gave me a non-Bukkit world. Contact your admin.");
+				}
+				if (reg == null) {
+					player.sendMessage("No region found");
 					return false;
+				}
+				int affected = 0;
+				for (BlockVector bv : reg) {
+					Location loc = new Location(world, bv.getX(), bv.getY(), bv.getZ());
+					Block dablock = loc.getBlock();
+					player.sendMessage(String.valueOf(dablock.getData()));
+					if (!conBlock.hasBlock(loc)) {
+						if (conBlock.delBlock(dablock)) {
+							affected++;
+						}
+					}
 				}
 				sender.sendMessage(affected
 						+ " blocks removed from ControllerBlock");
