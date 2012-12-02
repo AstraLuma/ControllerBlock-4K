@@ -42,11 +42,6 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 
 	HashMap<String, CBlock> movingCBlock = new HashMap<String, CBlock>();
 	HashMap<String, Location> moveHere = new HashMap<String, Location>();
-	private Material CBlockType;
-	private Material semiProtectedCBlockType;
-	private Material unProtectedCBlockType;
-	private List<Material> DisallowedTypesAll = new ArrayList<Material>();
-	private List<Material> UnprotectedBlocks = new ArrayList<Material>();
 
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
@@ -353,24 +348,25 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public Material getCBlockType() {
-		return CBlockType;
+		return Material.getMaterial(getConfig().getString("ControllerBlockType"));
 	}
 
 	public Material getSemiProtectedCBlockType() {
-		return semiProtectedCBlockType;
+		return Material.getMaterial(getConfig().getString("SemiProtectedControllerBlockType"));
 	}
 
 	public Material getUnProtectedCBlockType() {
-		return unProtectedCBlockType;
+		return Material.getMaterial(getConfig().getString("UnProtectedControllerBlockType"));
 	}
 
 	public boolean isValidMaterial(Material m) {
 		if (!m.isBlock()) {
 			return false;
 		}
-		Iterator<Material> i = DisallowedTypesAll.iterator();
-		while (i.hasNext()) {
-			if (i.next().equals(m)) {
+		
+		for (String type : getConfig().getStringList("disallowed")) {
+			Material i = Material.getMaterial(type);
+			if (i.equals(m)) {
 				return false;
 			}
 		}
@@ -381,9 +377,10 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		if (!m.isBlock()) {
 			return false;
 		}
-		Iterator<Material> i = UnprotectedBlocks.iterator();
-		while (i.hasNext()) {
-			if (i.next().equals(m)) {
+		
+		for (String type : getConfig().getStringList("unprotected")) {
+			Material i = Material.getMaterial(type);
+			if (i.equals(m)) {
 				return true;
 			}
 		}
