@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
     <jar path="/home/astronouth7303/.local/tekkit/plugins/controllerblock-4k.jar"/>
-    <options buildIfNeeded="true" compress="true" descriptionLocation="/ControllerBlock-WE/plugin-jar.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/ControllerBlock-4K/plugin-jar.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
     <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
@@ -11,9 +11,8 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
-        <file path="/ControllerBlock-WE/README.md"/>
-        <javaElement handleIdentifier="=ControllerBlock-WE/src"/>
-        <file path="/ControllerBlock-WE/plugin.yml"/>
-        <file path="/ControllerBlock-WE/config.yml"/>
+        <javaElement handleIdentifier="=ControllerBlock-4K/src"/>
+        <file path="/ControllerBlock-4K/plugin.yml"/>
+        <file path="/ControllerBlock-4K/config.yml"/>
     </selectedElements>
 </jardesc>
