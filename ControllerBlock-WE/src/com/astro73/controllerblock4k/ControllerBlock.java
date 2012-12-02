@@ -298,7 +298,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			CBlock block = i.next();
 
 			if ((c != block)
-					&& ((m == null) || (m.equals(block.getType())))
+					/*&& ((m == null) || (m.equals(block.getType())))*/
 					&& ((o == null) || (o.equals(Boolean.valueOf(block.isOn()))))
 					&& (block.hasBlock(l))) {
 				return block;
@@ -310,7 +310,6 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	public CBlock moveControllerBlock(CBlock c, Location l) {
 		Iterator<BlockDesc> oldBlockDescs = c.iterator();
 		CBlock newC = createCBlock(l, c.getOwner(), c.protectedLevel);
-		newC.setType(c.getType());
 		if (c.isOn()) {
 			while (oldBlockDescs.hasNext()) {
 				newC.addBlock(oldBlockDescs.next().loc.getBlock());

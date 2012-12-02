@@ -1,9 +1,11 @@
 package com.astro73.controllerblock4k;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,7 +17,6 @@ import org.bukkit.material.RedstoneWire;
 
 public class CBlock implements Iterable<BlockDesc> {
 	private Location blockLocation = null;
-	private Material blockType = null;
 	private List<BlockDesc> placedBlocks = new ArrayList<BlockDesc>();
 	private String owner = null;
 
@@ -52,14 +53,6 @@ public class CBlock implements Iterable<BlockDesc> {
 		return owner;
 	}
 
-	public Material getType() {
-		return blockType;
-	}
-
-	public void setType(Material m) {
-		blockType = m;
-	}
-
 	public Location getLoc() {
 		return blockLocation;
 	}
@@ -70,27 +63,23 @@ public class CBlock implements Iterable<BlockDesc> {
 	}
 	
 	public boolean addBlock(Block b) {
-		if (b.getType().equals(blockType)) {
-			Location bloc = b.getLocation();
-			if (placedBlocks.isEmpty()) {
-				placedBlocks
-						.add(new BlockDesc(bloc, blockType, Byte.valueOf(b.getData())));
-				return true;
-			}
-			;
-			for (ListIterator<BlockDesc> i = placedBlocks.listIterator(); i.hasNext();) {
-				BlockDesc loc = i.next();
-				if (bloc.getBlockY() > loc.loc.getBlockY()) {
-					i.previous();
-					i.add(new BlockDesc(bloc, blockType, Byte.valueOf(b.getData())));
-					return true;
-				}
-			}
-			placedBlocks.add(new BlockDesc(bloc, blockType, Byte.valueOf(b.getData())));
+		Location bloc = b.getLocation();
+		if (placedBlocks.isEmpty()) {
+			placedBlocks
+					.add(new BlockDesc(bloc, b.getType(), Byte.valueOf(b.getData())));
 			return true;
 		}
-
-		return false;
+		;
+		for (ListIterator<BlockDesc> i = placedBlocks.listIterator(); i.hasNext();) {
+			BlockDesc loc = i.next();
+			if (bloc.getBlockY() > loc.loc.getBlockY()) {
+				i.previous();
+				i.add(new BlockDesc(bloc, b.getType(), Byte.valueOf(b.getData())));
+				return true;
+			}
+		}
+		placedBlocks.add(new BlockDesc(bloc, b.getType(), Byte.valueOf(b.getData())));
+		return true;
 	}
 
 	public boolean delBlock(Block b) {
@@ -102,8 +91,9 @@ public class CBlock implements Iterable<BlockDesc> {
 				CBlock check = parent.getControllerBlockFor(this, u, null,
 						Boolean.valueOf(true));
 				if (check != null) {
-					b.setType(check.blockType);
-					b.setData(check.getBlock(u).data);
+					BlockDesc bd = check.getBlock(u);
+					b.setType(bd.mat);
+					b.setData(bd.data);
 				}
 				return true;
 			}
@@ -157,18 +147,30 @@ public class CBlock implements Iterable<BlockDesc> {
 
 	public void destroy() {
 		turnOff();
-		int i = placedBlocks.size();
-		int j = 0;
-		while (i > 0) {
-			if (i > 64) {
-				j = 64;
-				i -= 64;
-			} else {
-				j = i;
-				i -= i;
+		Map<Material, Integer> counts = new HashMap<Material, Integer>();
+		for (BlockDesc bd : placedBlocks) {
+			Integer ci = counts.get(bd.mat);
+			int c = 0;
+			if (ci != null) {
+				c = ci;
 			}
-			blockLocation.getWorld().dropItemNaturally(blockLocation,
-					new ItemStack(blockType, j));
+			c += 1;
+			counts.put(bd.mat, c);
+		}
+		for (Material mat : counts.keySet()) {
+			int i = counts.get(mat);
+			int j = 0;
+			while (i > 0) {
+				if (i > 64) {
+					j = 64;
+					i -= 64;
+				} else {
+					j = i;
+					i -= i;
+				}
+				blockLocation.getWorld().dropItemNaturally(blockLocation,
+						new ItemStack(mat, j));
+			}
 		}
 	}
 
@@ -211,7 +213,7 @@ public class CBlock implements Iterable<BlockDesc> {
 			boolean applyPhysics = true;
 
 			if (check != null) {
-				cur.setTypeIdAndData(check.blockType.getId(),
+				cur.setTypeIdAndData(d.mat.getId(),
 						check.getBlock(loc).data, applyPhysics);
 			} else if (protectedLevel == Protection.PROTECTED) {
 				cur.setType(Material.AIR);
@@ -252,7 +254,7 @@ public class CBlock implements Iterable<BlockDesc> {
 				if (protectedLevel == Protection.PROTECTED) {
 					applyPhysics = false;
 				}
-				cur.setTypeIdAndData(blockType.getId(), b.data,
+				cur.setTypeIdAndData(b.mat.getId(), b.data,
 						applyPhysics);
 			}
 		}

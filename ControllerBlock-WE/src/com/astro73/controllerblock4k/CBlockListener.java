@@ -51,7 +51,12 @@ public class CBlockListener implements Runnable, Listener {
 				|| (t.equals(Material.REDSTONE_TORCH_ON))
 				|| (t.equals(Material.REDSTONE_TORCH_OFF));
 	}
-
+	
+	
+	/**
+	 * FIXME: Redo block type filtering
+	 * @param e
+	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent e) {
 		if (e.isCancelled()) {
@@ -71,6 +76,7 @@ public class CBlockListener implements Runnable, Listener {
 					|| (item.equals(Material.IRON_PICKAXE))
 					|| (item.equals(Material.GOLD_PICKAXE))
 					|| (item.equals(Material.DIAMOND_PICKAXE))) {
+				//TODO: Remove the block
 				return;
 			}
 			if (conBlock != null) {
@@ -102,23 +108,18 @@ public class CBlockListener implements Runnable, Listener {
 					if (b.getType() == parent.getCBlockType()) {
 						cBTypeStr = "protected";
 						cBType = CBlock.Protection.PROTECTED;
+					} else if (b.getType() == parent.getSemiProtectedCBlockType()) {
+						cBTypeStr = "semi-protected";
+						cBType = CBlock.Protection.SEMIPROTECTED;
+					} else if (b.getType() == parent.getUnProtectedCBlockType()) {
+						cBTypeStr = "unprotected";
+						cBType = CBlock.Protection.UNPROTECTED;
 					} else {
-						if (b.getType() == parent.getSemiProtectedCBlockType()) {
-							cBTypeStr = "semi-protected";
-							cBType = CBlock.Protection.SEMIPROTECTED;
-						} else {
-							if (b.getType() == parent
-									.getUnProtectedCBlockType()) {
-								cBTypeStr = "unprotected";
-								cBType = CBlock.Protection.UNPROTECTED;
-							} else {
-								return;
-							}
-						}
+						return;
 					}
+					
 					if (!parent.getPerm().canCreate(player)) {
-						player.sendMessage("You're not allowed to create "
-								+ cBTypeStr + " ControllerBlocks");
+						player.sendMessage("You're not allowed to create " + cBTypeStr + " ControllerBlocks");
 						e.setCancelled(true);
 						return;
 					}
@@ -127,10 +128,8 @@ public class CBlockListener implements Runnable, Listener {
 						e.setCancelled(true);
 						return;
 					}
-					conBlock = parent.createCBlock(b.getLocation(),
-							player.getName(), cBType);
-					player.sendMessage("Created " + cBTypeStr
-							+ " controller block");
+					conBlock = parent.createCBlock(b.getLocation(), player.getName(), cBType);
+					player.sendMessage("Created " + cBTypeStr + " controller block");
 					e.setCancelled(true);
 				}
 
@@ -164,20 +163,20 @@ public class CBlockListener implements Runnable, Listener {
 						e.setCancelled(true);
 						return;
 					}
-					conBlock.setType(item);
+					//TODO: conBlock.setType(item);
 				}
 
-				if ((item != Material.AIR) && (item != conBlock.getType())) {
+				/*if ((item != Material.AIR) && (item != conBlock.getType())) {
 					player.sendMessage("This ControllerBlock needs to be edited with "
 							+ conBlock.getType());
 					e.setCancelled(true);
 					return;
-				}
+				}*/
 
 				parent.map.put(player, conBlock);
 				conBlock.editBlock(true);
 				player.sendMessage("You're now editing this block with "
-						+ conBlock.getType() + " "
+						/*+ conBlock.getType() + " "*/
 						+ Util.formatBlockCount(conBlock));
 				e.setCancelled(true);
 				return;
@@ -199,7 +198,7 @@ public class CBlockListener implements Runnable, Listener {
 
 		conBlock = parent.map.get(player);
 		if ((conBlock != null) && (conBlock.hasBlock(b.getLocation()))
-				&& (conBlock.getType().equals(b.getType()))) {
+				/*&& (conBlock.getType().equals(b.getType()))*/) {
 			if (conBlock.delBlock(b)) {
 				player.sendMessage("Block removed from controller "
 						+ Util.formatBlockCount(conBlock));
@@ -227,7 +226,12 @@ public class CBlockListener implements Runnable, Listener {
 			}
 		}
 	}
-
+	
+	
+	/**
+	 * FIXME: Type filtering
+	 * @param e
+	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockDamage(BlockDamageEvent e) {
 		Player player = e.getPlayer();
@@ -334,19 +338,19 @@ public class CBlockListener implements Runnable, Listener {
 					player.sendMessage("The Material is protected, can't use with (semi-)unprotected ControllerBlocks.");
 					return;
 				}
-				conBlock.setType(item);
+				//conBlock.setType(item);
 			}
 
-			if ((item != Material.AIR) && (item != conBlock.getType())) {
+/*			if ((item != Material.AIR) && (item != conBlock.getType())) {
 				player.sendMessage("This ControllerBlock needs to be edited with "
 						+ conBlock.getType());
 				return;
-			}
+			}*/
 
 			parent.map.put(player, conBlock);
 			conBlock.editBlock(true);
 			player.sendMessage("You're now editing this block with "
-					+ conBlock.getType() + " "
+					/*+ conBlock.getType() + " "*/
 					+ Util.formatBlockCount(conBlock));
 		}
 	}
@@ -375,7 +379,7 @@ public class CBlockListener implements Runnable, Listener {
 
 		if ((parent.getConfigu()
 				.getInt(Config.Option.MaxDistanceFromController).intValue() != 0)
-				&& (conBlock.getType().equals(e.getBlock().getType()))
+				/*&& (conBlock.getType().equals(e.getBlock().getType()))*/
 				&& (!parent.getPerm().isAdminPlayer(player))
 				&& (Util.getDistanceBetweenLocations(conBlock.getLoc(), e
 						.getBlock().getLocation()) > parent.getConfigu()
@@ -408,7 +412,7 @@ public class CBlockListener implements Runnable, Listener {
 				return;
 			}
 
-			Player player = getPlayerEditing(conBlock);
+			/*Player player = getPlayerEditing(conBlock);
 
 			if (!Util.typeEquals(conBlock.getType(), e.getChangedType())) {
 				parent.log.debug("Block at "
@@ -419,7 +423,7 @@ public class CBlockListener implements Runnable, Listener {
 				conBlock.delBlock(e.getBlock());
 				player.sendMessage("Removing block due to changed type while editing "
 						+ Util.formatBlockCount(conBlock));
-			}
+			}*/
 		} else {
 			BlockProtectMode protect = (BlockProtectMode) parent.getConfigu()
 					.getOpt(Config.Option.BlockPhysicsProtectMode);
@@ -511,15 +515,15 @@ public class CBlockListener implements Runnable, Listener {
 	public void run() {
 		if (!parent.getConfigu().getBool(
 				Config.Option.DisableEditDupeProtection)) {
-			for (@SuppressWarnings("rawtypes")
+			//FIXME: What is this checking exactly?
+/*			for (@SuppressWarnings("rawtypes")
 			Map.Entry e : parent.map.entrySet()) {
 				@SuppressWarnings("rawtypes")
 				Iterator i = ((CBlock) e.getValue()).iterator();
 				while (i.hasNext()) {
 					Block b = Util
 							.getBlockAtLocation(((BlockDesc) i.next()).loc);
-					if (!Util.typeEquals(b.getType(),
-							((CBlock) e.getValue()).getType())) {
+					if (!Util.typeEquals(b.getType(), ((CBlock) e.getValue()).getType())) {
 						parent.log
 								.debug("Block at "
 										+ Util.formatLocation(b.getLocation())
@@ -535,7 +539,7 @@ public class CBlockListener implements Runnable, Listener {
 						return;
 					}
 				}
-			}
+			}*/
 		}
 		for (@SuppressWarnings("rawtypes")
 		Map.Entry e : parent.map.entrySet()) {
