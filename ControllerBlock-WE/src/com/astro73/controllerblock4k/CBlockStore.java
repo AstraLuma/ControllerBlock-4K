@@ -257,8 +257,8 @@ public class CBlockStore {
 
 	public Iterable<BlockDesc> loadAllSerfs(ControllerBlock parent, long lord) {
 		try {
-			PreparedStatement stmt = conn
-					.prepareStatement("SELECT * FROM ControllerBlock_Serf WHERE lord = ?;");
+			PreparedStatement stmt = conn.prepareStatement(
+					"SELECT * FROM ControllerBlock_Serf WHERE lord = ?;");
 			stmt.setLong(1, lord);
 			ResultSet rs = stmt.executeQuery();
 			return new SerfIterable(this, rs, parent);
@@ -354,5 +354,17 @@ public class CBlockStore {
 
 	public boolean removeLord(Location loc) {
 		return false;
+	}
+
+	public void removeLord(long id) {
+		try {
+			PreparedStatement stmt = conn.prepareStatement(
+					"DELETE FROM ControllerBlock_Lord WHERE id = ?;");
+			stmt.setLong(1, id);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

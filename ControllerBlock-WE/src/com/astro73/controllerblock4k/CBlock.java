@@ -146,32 +146,33 @@ public class CBlock implements Iterable<BlockDesc> {
 	}
 
 	public void destroy() {
-		turnOff();
-		Map<Material, Integer> counts = new HashMap<Material, Integer>();
-		for (BlockDesc bd : placedBlocks) {
-			Integer ci = counts.get(bd.mat);
-			int c = 0;
-			if (ci != null) {
-				c = ci;
-			}
-			c += 1;
-			counts.put(bd.mat, c);
-		}
-		for (Material mat : counts.keySet()) {
-			int i = counts.get(mat);
-			int j = 0;
-			while (i > 0) {
-				if (i > 64) {
-					j = 64;
-					i -= 64;
-				} else {
-					j = i;
-					i -= i;
+		if (!isOn()) {
+			Map<Material, Integer> counts = new HashMap<Material, Integer>();
+			for (BlockDesc bd : placedBlocks) {
+				Integer ci = counts.get(bd.mat);
+				int c = 0;
+				if (ci != null) {
+					c = ci;
 				}
-				blockLocation.getWorld().dropItemNaturally(blockLocation,
-						new ItemStack(mat, j));
+				c += 1;
+				counts.put(bd.mat, c);
+			}
+			for (Material mat : counts.keySet()) {
+				int i = counts.get(mat);
+				int j = 0;
+				while (i > 0) {
+					if (i > 64) {
+						j = 64;
+						i -= 64;
+					} else {
+						j = i;
+						i -= i;
+					}
+					blockLocation.getWorld().dropItemNaturally(blockLocation, new ItemStack(mat, j));
+				}
 			}
 		}
+		parent.removeCBlock(this, this.id);	
 	}
 
 	public boolean isOn() {

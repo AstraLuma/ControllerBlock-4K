@@ -76,7 +76,6 @@ public class CBlockListener implements Runnable, Listener {
 					|| (item.equals(Material.IRON_PICKAXE))
 					|| (item.equals(Material.GOLD_PICKAXE))
 					|| (item.equals(Material.DIAMOND_PICKAXE))) {
-				//TODO: Remove the block
 				return;
 			}
 			if (conBlock != null) {

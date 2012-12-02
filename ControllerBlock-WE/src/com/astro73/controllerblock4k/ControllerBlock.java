@@ -909,4 +909,9 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	public void run() {
 		loadData();
 	}
+
+	public void removeCBlock(CBlock cb, long id) {
+		blocks.remove(cb);
+		getStore().removeLord(id);
+	}
 }
