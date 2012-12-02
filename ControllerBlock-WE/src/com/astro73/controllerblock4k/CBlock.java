@@ -88,8 +88,7 @@ public class CBlock implements Iterable<BlockDesc> {
 			Location t = i.next().loc;
 			if (t.equals(u)) {
 				i.remove();
-				CBlock check = parent.getControllerBlockFor(this, u, null,
-						Boolean.valueOf(true));
+				CBlock check = parent.getControllerBlockFor(this, u, true);
 				if (check != null) {
 					BlockDesc bd = check.getBlock(u);
 					b.setType(bd.mat);
@@ -207,8 +206,7 @@ public class CBlock implements Iterable<BlockDesc> {
 	public void turnOff() {
 		for (BlockDesc d : placedBlocks) {
 			Location loc = d.loc;
-			CBlock check = parent.getControllerBlockFor(this, loc, null,
-					Boolean.valueOf(true));
+			CBlock check = parent.getControllerBlockFor(this, loc, true);
 			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(),
 					loc.getBlockY(), loc.getBlockZ());
 			boolean applyPhysics = true;

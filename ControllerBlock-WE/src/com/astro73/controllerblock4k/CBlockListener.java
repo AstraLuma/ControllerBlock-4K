@@ -202,11 +202,9 @@ public class CBlockListener implements Runnable, Listener {
 				player.sendMessage("Block removed from controller "
 						+ Util.formatBlockCount(conBlock));
 			}
-		} else if ((conBlock = parent.getControllerBlockFor(null,
-				b.getLocation(), b.getType(), null)) != null) {
-			switch (((BlockProtectMode) parent.getConfigu().getOpt(
-					Config.Option.BlockProtectMode)).ordinal()) {
-				case 1:
+		} else if ((conBlock = parent.getControllerBlockFor(b.getLocation())) != null) {
+			switch (BlockProtectMode.valueOf(parent.getConfig().getString("BlockProtectMode"))) {
+				case PROTECT:
 					if ((conBlock.protectedLevel != CBlock.Protection.PROTECTED)
 							&& ((conBlock.isOn()) || (conBlock.protectedLevel == CBlock.Protection.UNPROTECTED))) {
 						break;
@@ -219,9 +217,9 @@ public class CBlockListener implements Runnable, Listener {
 							+ conBlock.getLoc().getBlockZ());
 					e.setCancelled(true);
 					break;
-				case 2:
+				case REMOVE:
 					conBlock.delBlock(b);
-				case 3:
+				case NONE:
 			}
 		}
 	}
@@ -364,26 +362,22 @@ public class CBlockListener implements Runnable, Listener {
 		if (conBlock == null) {
 			return;
 		}
-
-		if ((parent.getConfigu().getInt(Config.Option.MaxBlocksPerController)
-				.intValue() != 0)
-				&& (conBlock.numBlocks() >= parent.getConfigu()
-						.getInt(Config.Option.MaxBlocksPerController)
-						.intValue())
-				&& (!parent.getPerm().isAdminPlayer(player))) {
-			player.sendMessage("Controller block is full "
-					+ Util.formatBlockCount(conBlock));
+		
+		int maxblocks = parent.getConfig().getInt("MaxBlocksPerController");
+		if (
+				(maxblocks != 0)
+				&& (conBlock.numBlocks() >= maxblocks)
+				&& (!parent.getPerm().isAdminPlayer(player))
+				) {
+			player.sendMessage("Controller block is full " + Util.formatBlockCount(conBlock));
 			return;
 		}
-
-		if ((parent.getConfigu()
-				.getInt(Config.Option.MaxDistanceFromController).intValue() != 0)
-				/*&& (conBlock.getType().equals(e.getBlock().getType()))*/
+		
+		int maxdist = parent.getConfig().getInt("MaxDistanceFromController");
+		if ((maxdist != 0)
 				&& (!parent.getPerm().isAdminPlayer(player))
-				&& (Util.getDistanceBetweenLocations(conBlock.getLoc(), e
-						.getBlock().getLocation()) > parent.getConfigu()
-						.getInt(Config.Option.MaxDistanceFromController)
-						.intValue())) {
+				&& (Util.getDistanceBetweenLocations(conBlock.getLoc(), e.getBlock().getLocation()) > maxdist)
+				) {
 			player.sendMessage("This block is too far away from the controller block to be controlled");
 			return;
 		}
@@ -396,8 +390,7 @@ public class CBlockListener implements Runnable, Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockPhysics(BlockPhysicsEvent e) {
-		CBlock conBlock = parent.getControllerBlockFor(null, e.getBlock()
-				.getLocation(), null, Boolean.valueOf(true));
+		CBlock conBlock = parent.getControllerBlockFor(null, e.getBlock().getLocation(), true);
 		if (conBlock == null) {
 			return;
 		}
@@ -424,20 +417,21 @@ public class CBlockListener implements Runnable, Listener {
 						+ Util.formatBlockCount(conBlock));
 			}*/
 		} else {
-			BlockProtectMode protect = (BlockProtectMode) parent.getConfigu()
-					.getOpt(Config.Option.BlockPhysicsProtectMode);
-			if (protect.equals(BlockProtectMode.protect)) {
+			BlockProtectMode protect = BlockProtectMode.valueOf(parent.getConfig().getString("BlockPhysicsProtectMode"));
+			switch (protect) {
+			case PROTECT:
 				e.setCancelled(true);
-			} else if (protect.equals(BlockProtectMode.remove)) {
+				break;
+			case REMOVE:
 				conBlock.delBlock(e.getBlock());
+				break;
 			}
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockFromTo(BlockFromToEvent e) {
-		CBlock conBlock = parent.getControllerBlockFor(null, e.getToBlock()
-				.getLocation(), null, Boolean.valueOf(true));
+		CBlock conBlock = parent.getControllerBlockFor(null, e.getToBlock()	.getLocation(), true);
 		if (conBlock == null) {
 			return;
 		}
@@ -454,11 +448,10 @@ public class CBlockListener implements Runnable, Listener {
 			player.sendMessage("Removing block due to change while editing "
 					+ Util.formatBlockCount(conBlock));
 		} else {
-			BlockProtectMode protect = (BlockProtectMode) parent.getConfigu()
-					.getOpt(Config.Option.BlockFlowProtectMode);
-			if (protect.equals(BlockProtectMode.protect)) {
+			BlockProtectMode protect = BlockProtectMode.valueOf(parent.getConfig().getString("BlockFlowProtectMode"));
+			if (protect.equals(BlockProtectMode.PROTECT)) {
 				e.setCancelled(true);
-			} else if (protect.equals(BlockProtectMode.remove)) {
+			} else if (protect.equals(BlockProtectMode.REMOVE)) {
 				conBlock.delBlock(e.getBlock());
 			}
 		}
@@ -466,8 +459,7 @@ public class CBlockListener implements Runnable, Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockPistonExtend(BlockPistonExtendEvent event) {
-		if (((Boolean) parent.getConfigu().getOpt(
-				Config.Option.PistonProtection)).booleanValue()) {
+		if (parent.getConfig().getBoolean("PistonProtection")) {
 			Block b = event.getBlock();
 			CBlock conBlock = parent.getCBlock(b.getLocation());
 			if (conBlock != null) {
@@ -477,8 +469,7 @@ public class CBlockListener implements Runnable, Listener {
 			List<?> pblocks = event.getBlocks();
 			for (int i = 0; i < pblocks.size(); i++) {
 				Block block = (Block) pblocks.get(i);
-				if ((!parent.isControlledBlock(block.getLocation(),
-						block.getType()))
+				if ((!parent.isControlledBlock(block.getLocation()))
 						|| (parent.isUnprotectedMaterial(block.getType()))) {
 					continue;
 				}
@@ -489,8 +480,7 @@ public class CBlockListener implements Runnable, Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockPistonRetract(BlockPistonRetractEvent event) {
-		if (((Boolean) parent.getConfigu().getOpt(
-				Config.Option.PistonProtection)).booleanValue()) {
+		if (parent.getConfig().getBoolean("PistonProtection")) {
 			Block b = event.getBlock();
 			CBlock conBlock = parent.getCBlock(b.getLocation());
 			if (conBlock != null) {
@@ -501,8 +491,7 @@ public class CBlockListener implements Runnable, Listener {
 				Block block = b.getWorld().getBlockAt(
 						event.getRetractLocation());
 
-				if ((parent.isControlledBlock(block.getLocation(),
-						block.getType()))
+				if (parent.isControlledBlock(block.getLocation())
 						&& (!parent.isUnprotectedMaterial(block.getType()))) {
 					event.setCancelled(true);
 					return;
@@ -512,23 +501,21 @@ public class CBlockListener implements Runnable, Listener {
 	}
 
 	public void run() {
-		if (!parent.getConfigu().getBool(
-				Config.Option.DisableEditDupeProtection)) {
+		if (!parent.getConfig().getBoolean("DisableEditDupeProtection")) {
+			parent.getLogger().warning("Dupe checking disabled");
 			//FIXME: What is this checking exactly?
-/*			for (@SuppressWarnings("rawtypes")
-			Map.Entry e : parent.map.entrySet()) {
-				@SuppressWarnings("rawtypes")
-				Iterator i = ((CBlock) e.getValue()).iterator();
+/*			for (Map.Entry<CBlock> e : parent.map.entrySet()) {
+				Iterator<BlockDesc> i = e.getValue().iterator();
 				while (i.hasNext()) {
 					Block b = Util
-							.getBlockAtLocation(((BlockDesc) i.next()).loc);
-					if (!Util.typeEquals(b.getType(), ((CBlock) e.getValue()).getType())) {
+							.getBlockAtLocation(i.next().loc);
+					if (!Util.typeEquals(b.getType(), e.getValue().getType())) {
 						parent.log
 								.debug("Block at "
 										+ Util.formatLocation(b.getLocation())
 										+ " was " + b.getType()
 										+ " but expected "
-										+ ((CBlock) e.getValue()).getType()
+										+ e.getValue().getType()
 										+ ", dupe!");
 						i.remove();
 						((Player) e.getKey())
@@ -540,12 +527,10 @@ public class CBlockListener implements Runnable, Listener {
 				}
 			}*/
 		}
-		for (@SuppressWarnings("rawtypes")
-		Map.Entry e : parent.map.entrySet()) {
-			@SuppressWarnings("rawtypes")
-			Iterator i = ((CBlock) e.getValue()).iterator();
+		for (Map.Entry<Player, CBlock> e : parent.map.entrySet()) {
+			Iterator<BlockDesc> i = e.getValue().iterator();
 			while (i.hasNext()) {
-				BlockDesc d = (BlockDesc) i.next();
+				BlockDesc d = i.next();
 				Block b = Util.getBlockAtLocation(d.loc);
 				d.data = b.getState().getData().getData();
 			}

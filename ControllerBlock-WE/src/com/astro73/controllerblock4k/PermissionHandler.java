@@ -41,7 +41,7 @@ public class PermissionHandler {
 
 	public boolean isAdminPlayer(Player p) {
 		parent.getLogger().finer("Checking if " + p.getName() + " is a CB admin");
-		if ((parent.getConfigu().getBool(Config.Option.ServerOpIsAdmin))
+		if (parent.getConfig().getBoolean("ServerOpIsAdmin")
 				&& (p.isOp())) {
 			parent.getLogger().finer(p.getName()
 					+ " is a server operator, and serverOpIsAdmin is set");
@@ -79,11 +79,11 @@ public class PermissionHandler {
 			return true;
 		}
 
-		if (parent.getConfigu().getBool(Config.Option.AnyoneCanCreate)) {
+		if (parent.getConfig().getBoolean("AnyoneCanCreate")) {
 			parent.getLogger().finer("Anyone is allowed to create, letting "
 					+ p.getName() + " create");
 		}
-		return parent.getConfigu().getBool(Config.Option.AnyoneCanCreate);
+		return parent.getConfig().getBoolean("AnyoneCanCreate");
 	}
 
 	public boolean canModify(Player p) {
@@ -98,11 +98,11 @@ public class PermissionHandler {
 			return true;
 		}
 
-		if (parent.getConfigu().getBool(Config.Option.AnyoneCanModifyOther)) {
+		if (parent.getConfig().getBoolean("AnyoneCanModifyOther")) {
 			parent.getLogger().finer("Anyone is allowed to modify anyones blocks, allowing "
 							+ p.getName() + " to modify");
 		}
-		return parent.getConfigu().getBool(Config.Option.AnyoneCanModifyOther);
+		return parent.getConfig().getBoolean("AnyoneCanModifyOther");
 	}
 
 	public boolean canModify(Player p, CBlock c) {
@@ -126,11 +126,11 @@ public class PermissionHandler {
 			return true;
 		}
 
-		if (parent.getConfigu().getBool(Config.Option.AnyoneCanDestroyOther)) {
+		if (parent.getConfig().getBoolean("AnyoneCanDestroyOther")) {
 			parent.getLogger().finer("Anyone is allowed to destroy anyones blocks, allowing "
 							+ p.getName() + " to destroy");
 		}
-		return parent.getConfigu().getBool(Config.Option.AnyoneCanDestroyOther);
+		return parent.getConfig().getBoolean("AnyoneCanDestroyOther");
 	}
 
 	public boolean canDestroy(Player p, CBlock c) {

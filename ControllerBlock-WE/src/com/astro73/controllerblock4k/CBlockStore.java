@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.configuration.Configuration;
 
 /**
  * This handles actually interfacing with the storage system.
@@ -33,9 +34,8 @@ public class CBlockStore {
 	 * @throws SQLException
 	 *             From JDBC
 	 */
-	public CBlockStore(Config config) throws SQLException {
-		conn = DriverManager.getConnection((String) config
-				.getOpt(Config.Option.SqlConnection));
+	public CBlockStore(Configuration config) throws SQLException {
+		conn = DriverManager.getConnection((String)config.getString("SqlConnection"));
 
 		update_lord = conn
 				.prepareStatement("UPDATE ControllerBlock_Lord SET world = ?, x = ?, y = ?, z = ?, owner = ?, protection = ? WHERE id = ?;");
@@ -55,7 +55,7 @@ public class CBlockStore {
 	 * Stores the controlling block
 	 * 
 	 * @param id
-	 *            The block's ID persistent across moves, or 0 if it has none
+	 *            The block's ID persistent across moves, or 0 if it has NONE
 	 *            yet
 	 * @param loc
 	 *            The block's location

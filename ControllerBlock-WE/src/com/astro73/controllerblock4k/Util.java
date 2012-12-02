@@ -34,13 +34,12 @@ public class Util {
 	}
 
 	public static String formatBlockCount(CBlock c) {
-		if (c.getParent().getConfigu()
-				.getInt(Config.Option.MaxBlocksPerController).intValue() > 0) {
+		int mbpc = c.getParent().getConfig().getInt("MaxBlocksPerController");
+		if (mbpc > 0) {
 			return "("
 					+ c.numBlocks()
 					+ "/"
-					+ c.getParent().getConfigu()
-							.getInt(Config.Option.MaxBlocksPerController)
+					+ mbpc
 					+ " blocks)";
 		}
 		return "(" + c.numBlocks() + " blocks)";

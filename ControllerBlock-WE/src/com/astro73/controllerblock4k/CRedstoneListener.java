@@ -19,7 +19,7 @@ public class CRedstoneListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockRedstoneChange(BlockRedstoneEvent e) {
 		CBlock conBlock = null;
-		if (parent.getConfigu().getBool(Config.Option.QuickRedstoneCheck)) {
+		if (parent.getConfig().getBoolean("QuickRedstoneCheck")) {
 			conBlock = parent.getCBlock(e.getBlock()
 					.getRelative(BlockFace.DOWN).getLocation());
 		}
