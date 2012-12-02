@@ -1,0 +1,117 @@
+# ControllerBlock configuration file
+
+# Blank lines and lines starting with # are ignored
+# Material names can be found: http://javadoc.lukegb.com/Bukkit/d7/dd9/namespaceorg_1_1bukkit.html#ab7fa290bb19b9a830362aa88028ec80a
+
+# ControllerBlockType is the material allowed of new ControllerBlocks
+# Doesn't affect already assigned ControllerBlocks
+ControllerBlockType: IRON_BLOCK
+
+# SemiProtectedControllerBlockType is the material that semi-protected
+# Controller Blocks are made from, this block will turn on in a protected
+# state, but when turned off, blocks controlled won't disappear, instead
+# they lose their protection and can be destroyed
+SemiProtectedControllerBlockType: GOLD_BLOCK
+
+# UnProtectedControllerBlockType is the material that unprotected
+# Controller Blocks are made from, blocks controlled by this will create
+# when turned on, but won't disappear when turned off, much like the
+# semi-protected controlled blocks, however, blocks controlled have no
+# protection against being broken even in the on state
+UnProtectedControllerBlockType: DIAMOND_BLOCK
+
+# QuickRedstoneCheck to false enables per-tick per-controllerblock isBlockPowered() checks
+# This is potentially laggier, but blocks can be powered like regular redstone blocks
+# If set to true, wire needs to be run on top of the controller block
+QuickRedstoneCheck: true
+
+# BlockProtectMode changes how we handle destroying controlled blocks
+# It has 3 modes:
+# protect - default, tries to prevent controlled blocks from being destroyed
+# remove - removes controlled blocks from controller if destroyed
+# none - don't do anything, this effectively makes controlled blocks dupable
+BlockProtectMode: protect
+
+# BlockPhysicsProtectMode changes how we handle changes against controlled blocks
+# It has 3 modes:
+# protect - default, stops physics interactions with controlled blocks
+# remove - removes controlled blocks from controller if changed
+# none - don't do anything, could have issues with some blocks
+BlockPhysicsProtectMode: protect
+
+# BlockFlowProtectMode changes how we handle water/lava flowing against controlled blocks
+# It has 3 modes:
+# protect - default, tries to prevent controlled blocks from being interacted
+# remove - removes controlled blocks from controller if flow event on it
+# none - don't do anything, things that drop when flowed over can be dupable
+BlockFlowProtectMode: protect
+
+# DisableEditDupeProtection set to true disables all the checks for changes while in
+# edit mode, this will make sure blocks placed in a spot will always be in that spot
+# even if they get removed by some kind of physics/flow event in the meantime
+DisableEditDupeProtection: false
+
+# PistonProtection set to true disables the ability of Pistons to move
+# ControllerBlocks or controlled Blocks.
+PistonProtection: false
+
+# MaxDistanceFromController sets how far away controlled blocks are allowed
+# to be attached and controlled to a controller block - 0 for infinte/across worlds
+MaxDistanceFromController: 0
+
+# MaxControlledBlocksPerController sets how many blocks are allowed to be attached
+# to a single controller block - 0 for infinite
+MaxBlocksPerController: 0
+
+# Permissions support
+# The nodes for permissions are:
+# controllerblock.admin - user isn't restricted by block counts or distance, able to
+#                         create/modify/destroy other users controllerblocks
+# controllerblock.create - user is allowed to setup controllerblocks
+# controllerblock.modifyOther - user is allowed to modify other users controllerblocks
+# controllerblock.destroyOther - user is allowed to destroy other users controllerblocks
+#
+# DisablePermissions will disable any lookups against Permissions if you
+# do have it installed, but want to disable this plugins use of it anyway
+# Note: You don't have to do this, the plugin isn't dependant on Permissions
+DisablePermissions: true
+
+# Users listed in ops.txt (op through server console) counts as an admin
+ServerOpIsAdmin: true
+
+# Everyone on the server can create new ControllerBlocks
+AnyoneCanCreate: false
+
+# Everyone can modify everyone elses ControllerBlocks
+AnyoneCanModifyOther: false
+
+# Everyone can destroy everyone elses ControllerBlocks
+AnyoneCanDestroyOther: false
+
+# The JDBC URL to the database
+# For MySQL, see http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-configuration-properties.html for the format
+SqlConnection: jdbc:mysql://localhost/tekkit
+
+
+# One name per line, users listed here are admins, and can
+# create/modify/destroy all ControllerBlocks on the server
+# Block restrictions don't apply to admins
+adminPlayers:
+  - astronouth7303
+
+# Add disallowed blocks here, one Material per line.
+# Item IDs higher than 255 are excluded automatically due to failing Material.isBlock() check
+#RED_ROSE
+#YELLOW_FLOWER
+#RED_MUSHROOM
+#BROWN_MUSHROOM
+disallowed: []
+
+# Add unprotected blocks here, one Material per line.
+# Item IDs higher than 255 are excluded automatically due to failing Material.isBlock() check
+# These Blocks ARE allowed to be pushed by Pistons and to be used with (semi) unprotected CBlocks.
+#RED_ROSE
+#YELLOW_FLOWER
+#RED_MUSHROOM
+#BROWN_MUSHROOM
+unprotected: []
