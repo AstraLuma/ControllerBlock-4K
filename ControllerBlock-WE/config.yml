@@ -63,19 +63,6 @@ MaxDistanceFromController: 0
 # to a single controller block - 0 for infinite
 MaxBlocksPerController: 0
 
-# Permissions support
-# The nodes for permissions are:
-# controllerblock.admin - user isn't restricted by block counts or distance, able to
-#                         create/modify/destroy other users controllerblocks
-# controllerblock.create - user is allowed to setup controllerblocks
-# controllerblock.modifyOther - user is allowed to modify other users controllerblocks
-# controllerblock.destroyOther - user is allowed to destroy other users controllerblocks
-#
-# DisablePermissions will disable any lookups against Permissions if you
-# do have it installed, but want to disable this plugins use of it anyway
-# Note: You don't have to do this, the plugin isn't dependant on Permissions
-DisablePermissions: true
-
 # Users listed in ops.txt (op through server console) counts as an admin
 ServerOpIsAdmin: true
 

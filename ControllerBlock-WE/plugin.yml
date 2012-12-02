@@ -9,3 +9,24 @@ depend: [WorldEdit]
 commands:
     cblock:
         description: Entry point to ControllerBlock, see /cblock help.
+
+permissions:
+  controllerblock.*:
+    description: Gives access to all ControllerBlock commands
+    children:
+      inferno.admin: true
+      inferno.create: true
+      inferno.modifyOther: true
+      inferno.destroyOther: true
+  controllerblock.admin:
+    description: user isn't restricted by block counts or distance, able to create/modify/destroy other users controllerblocks
+    default: op
+  controllerblock.create:
+    description: user is allowed to setup controllerblocks
+    default: op
+  controllerblock.modifyOther:
+    description: user is allowed to modify other users controllerblocks
+    default: false
+  controllerblock.destroyOther:
+    description: user is allowed to destroy other users controllerblocks
+    default: op
