@@ -63,22 +63,29 @@ public class CBlockListener implements Runnable, Listener {
 			return;
 		}
 		Player player = e.getPlayer();
+		
 		Block b = e.getBlock();
-		PlayerInventory inv = player.getInventory();
-		Material item = inv.getItemInHand().getType();
-
-		if ((player.getGameMode().equals(GameMode.CREATIVE))
+		PlayerInventory inv = null; 
+		Material item = null;
+		if (player != null) {
+			inv = player.getInventory();
+			item = inv.getItemInHand().getType();
+		}
+		
+		if ((player != null)
+				&& (GameMode.CREATIVE.equals(player.getGameMode()))
 				&& (item.isBlock())) {
-			CBlock conBlock = parent.map.get(player);
 
-			if ((item.equals(Material.WOOD_PICKAXE))
-					|| (item.equals(Material.STONE_PICKAXE))
-					|| (item.equals(Material.IRON_PICKAXE))
-					|| (item.equals(Material.GOLD_PICKAXE))
-					|| (item.equals(Material.DIAMOND_PICKAXE))) {
+			if (item.equals(Material.WOOD_PICKAXE)
+					|| item.equals(Material.STONE_PICKAXE)
+					|| item.equals(Material.IRON_PICKAXE)
+					|| item.equals(Material.GOLD_PICKAXE)
+					|| item.equals(Material.DIAMOND_PICKAXE)) {
 				return;
 			}
-			if (conBlock != null) {
+			
+			CBlock conBlock = parent.map.get(player);
+			if (conBlock != null) { // Only happens if player != null
 				if (parent.isControlBlock(b.getLocation())) {
 					conBlock.editBlock(false);
 					parent.map.remove(player);
@@ -150,47 +157,41 @@ public class CBlockListener implements Runnable, Listener {
 
 				if (conBlock.numBlocks() == 0) {
 					if (!parent.isValidMaterial(item)) {
-						player.sendMessage("Can't set the ControllerBlock type to "
-								+ item);
+						player.sendMessage("Can't set the ControllerBlock type to " + item);
 						e.setCancelled(true);
 						return;
 					}
 
 					if (((conBlock.protectedLevel == CBlock.Protection.SEMIPROTECTED) || (conBlock.protectedLevel == CBlock.Protection.UNPROTECTED))
 							&& (!parent.isUnprotectedMaterial(item))) {
-						player.sendMessage("The Material is protected, can't use with (semi-)unprotected ControllerBlocks.");
+						if (player != null) 
+							player.sendMessage("The Material is protected, can't use with (semi-)unprotected ControllerBlocks.");
 						e.setCancelled(true);
 						return;
 					}
-					//TODO: conBlock.setType(item);
 				}
-
-				/*if ((item != Material.AIR) && (item != conBlock.getType())) {
-					player.sendMessage("This ControllerBlock needs to be edited with "
-							+ conBlock.getType());
-					e.setCancelled(true);
-					return;
-				}*/
 
 				parent.map.put(player, conBlock);
 				conBlock.editBlock(true);
-				player.sendMessage("You're now editing this block with "
-						/*+ conBlock.getType() + " "*/
+				player.sendMessage("You're now editing this block "
 						+ Util.formatBlockCount(conBlock));
 				e.setCancelled(true);
 				return;
 			}
-		}
+		} //END player != null
+		
 		CBlock conBlock = parent.getCBlock(b.getLocation());
 		if (conBlock != null) {
 			if (!parent.getPerm().canDestroy(player, conBlock)) {
-				player.sendMessage("You're not allowed to destroy this ControllerBlock");
+				if (player != null)
+					player.sendMessage("You're not allowed to destroy this ControllerBlock");
 				e.setCancelled(true);
 				return;
 			}
 			conBlock = parent.destroyCBlock(b.getLocation());
 			if (conBlock != null) {
-				player.sendMessage("Destroyed controller block");
+				if (player != null)
+					player.sendMessage("Destroyed controller block");
 				removePlayersEditing(conBlock);
 			}
 		}
@@ -199,17 +200,19 @@ public class CBlockListener implements Runnable, Listener {
 		if ((conBlock != null) && (conBlock.hasBlock(b.getLocation()))
 				/*&& (conBlock.getType().equals(b.getType()))*/) {
 			if (conBlock.delBlock(b)) {
-				player.sendMessage("Block removed from controller "
+				if (player != null)
+					player.sendMessage("Block removed from controller "
 						+ Util.formatBlockCount(conBlock));
 			}
 		} else if ((conBlock = parent.getControllerBlockFor(b.getLocation())) != null) {
-			switch (BlockProtectMode.valueOf(parent.getConfig().getString("BlockProtectMode"))) {
+			switch (BlockProtectMode.fromConfig(parent.getConfig().getString("BlockProtectMode"))) {
 				case PROTECT:
 					if ((conBlock.protectedLevel != CBlock.Protection.PROTECTED)
 							&& ((conBlock.isOn()) || (conBlock.protectedLevel == CBlock.Protection.UNPROTECTED))) {
 						break;
 					}
-					player.sendMessage("This block is controlled by a controller block at "
+					if (player != null)
+						player.sendMessage("This block is controlled by a controller block at "
 							+ conBlock.getLoc().getBlockX()
 							+ ", "
 							+ conBlock.getLoc().getBlockY()
@@ -236,27 +239,36 @@ public class CBlockListener implements Runnable, Listener {
 		if ((e.isCancelled()) && (e.getBlock().getType().equals(Material.AIR))) {
 			CBlock conBlock;
 			if ((conBlock = parent.destroyCBlock(e.getBlock().getLocation())) != null) {
-				player.sendMessage("Destroyed controller block with superpickaxe?");
+				if (player != null)
+					player.sendMessage("Destroyed controller block with superpickaxe?");
 				removePlayersEditing(conBlock);
 			}
 		}
 		if ((e.isCancelled())
-				|| (player.getGameMode().equals(GameMode.CREATIVE))) {
+				|| (player != null && GameMode.CREATIVE.equals(player.getGameMode()))) {
 			return;
 		}
-		PlayerInventory inv = player.getInventory();
-		Material item = inv.getItemInHand().getType();
+		
+		PlayerInventory inv = null; 
+		Material item = null;
+		if (player != null) {
+			inv = player.getInventory();
+			item = inv.getItemInHand().getType();
+		}
 		Block b = e.getBlock();
-		CBlock conBlock = parent.map.get(player);
 
-		if ((item.equals(Material.WOOD_PICKAXE))
+		if ((item != null) && (
+				(item.equals(Material.WOOD_PICKAXE))
 				|| (item.equals(Material.STONE_PICKAXE))
 				|| (item.equals(Material.IRON_PICKAXE))
 				|| (item.equals(Material.GOLD_PICKAXE))
-				|| (item.equals(Material.DIAMOND_PICKAXE))) {
+				|| (item.equals(Material.DIAMOND_PICKAXE)))) {
 			return;
 		}
+		
+		CBlock conBlock = parent.map.get(player);
 		if (conBlock != null) {
+			assert player != null;
 			if (parent.isControlBlock(b.getLocation())) {
 				conBlock.editBlock(false);
 				parent.map.remove(player);
@@ -296,16 +308,16 @@ public class CBlockListener implements Runnable, Listener {
 					}
 				}
 				if (!parent.getPerm().canCreate(player)) {
-					player.sendMessage("You're not allowed to create "
-							+ cBTypeStr + " ControllerBlocks");
+					if (player != null)
+						player.sendMessage("You're not allowed to create " + cBTypeStr + " ControllerBlocks");
 					return;
 				}
 				if (parent.isControlledBlock(b.getLocation())) {
-					player.sendMessage("This block is controlled, controlled blocks can't be controllers");
+					if (player != null)
+						player.sendMessage("This block is controlled, controlled blocks can't be controllers");
 					return;
 				}
-				conBlock = parent.createCBlock(b.getLocation(),
-						player.getName(), cBType);
+				conBlock = parent.createCBlock(b.getLocation(), player.getName(), cBType);
 				player.sendMessage("Created " + cBTypeStr + " controller block");
 			}
 
@@ -313,11 +325,12 @@ public class CBlockListener implements Runnable, Listener {
 				return;
 			}
 			if (!parent.getPerm().canModify(player, conBlock)) {
-				player.sendMessage("You're not allowed to modify this ControllerBlock");
+				if (player != null)
+					player.sendMessage("You're not allowed to modify this ControllerBlock");
 				return;
 			}
 
-			if (item.equals(Material.STICK)) {
+			if (item != null && item.equals(Material.STICK)) {
 				parent.movingCBlock.put(player.getName(), conBlock);
 				player.sendMessage("ControllerBlock is registered as the next to move.   Right-Click the position where to move it.");
 				return;
@@ -335,20 +348,11 @@ public class CBlockListener implements Runnable, Listener {
 					player.sendMessage("The Material is protected, can't use with (semi-)unprotected ControllerBlocks.");
 					return;
 				}
-				//conBlock.setType(item);
 			}
-
-/*			if ((item != Material.AIR) && (item != conBlock.getType())) {
-				player.sendMessage("This ControllerBlock needs to be edited with "
-						+ conBlock.getType());
-				return;
-			}*/
 
 			parent.map.put(player, conBlock);
 			conBlock.editBlock(true);
-			player.sendMessage("You're now editing this block with "
-					/*+ conBlock.getType() + " "*/
-					+ Util.formatBlockCount(conBlock));
+			player.sendMessage("You're now editing this block " + Util.formatBlockCount(conBlock));
 		}
 	}
 
@@ -359,7 +363,7 @@ public class CBlockListener implements Runnable, Listener {
 		}
 		Player player = e.getPlayer();
 		CBlock conBlock = parent.map.get(player);
-		if (conBlock == null) {
+		if (conBlock == null) { // Always happens for non-players
 			return;
 		}
 		
@@ -417,7 +421,7 @@ public class CBlockListener implements Runnable, Listener {
 						+ Util.formatBlockCount(conBlock));
 			}*/
 		} else {
-			BlockProtectMode protect = BlockProtectMode.valueOf(parent.getConfig().getString("BlockPhysicsProtectMode"));
+			BlockProtectMode protect = BlockProtectMode.fromConfig(parent.getConfig().getString("BlockPhysicsProtectMode"));
 			switch (protect) {
 			case PROTECT:
 				e.setCancelled(true);
@@ -448,7 +452,7 @@ public class CBlockListener implements Runnable, Listener {
 			player.sendMessage("Removing block due to change while editing "
 					+ Util.formatBlockCount(conBlock));
 		} else {
-			BlockProtectMode protect = BlockProtectMode.valueOf(parent.getConfig().getString("BlockFlowProtectMode"));
+			BlockProtectMode protect = BlockProtectMode.fromConfig(parent.getConfig().getString("BlockFlowProtectMode"));
 			if (protect.equals(BlockProtectMode.PROTECT)) {
 				e.setCancelled(true);
 			} else if (protect.equals(BlockProtectMode.REMOVE)) {

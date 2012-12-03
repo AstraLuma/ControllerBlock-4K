@@ -19,6 +19,7 @@ public class PermissionHandler {
 	}
 
 	public boolean checkPermissionsEx(Player p, String perm) {
+		if (p == null) return false;
 		if (pex == null) {
 			Plugin plug = parent.getServer().getPluginManager()
 					.getPlugin("PermissionsEx");
@@ -40,6 +41,7 @@ public class PermissionHandler {
 	}
 
 	public boolean isAdminPlayer(Player p) {
+		if (p == null) return false;
 		parent.getLogger().finer("Checking if " + p.getName() + " is a CB admin");
 		if (parent.getConfig().getBoolean("ServerOpIsAdmin")
 				&& (p.isOp())) {
@@ -68,45 +70,50 @@ public class PermissionHandler {
 	}
 
 	public boolean canCreate(Player p) {
+		if (p == null) return false; // Non-players can never create controller blocks
+		
+		String name = p.getName();
+		
 		if (isAdminPlayer(p)) {
-			parent.getLogger().finer(p.getName() + " is an admin, can create");
+			parent.getLogger().finer(name + " is an admin, can create");
 			return true;
 		}
 
 		if (checkPermissionsEx(p, "controllerblock.create")) {
-			parent.getLogger().finer("PermissionsEx said " + p.getName()
-					+ " can create");
+			parent.getLogger().finer("PermissionsEx said " + name + " can create");
 			return true;
 		}
 
 		if (parent.getConfig().getBoolean("AnyoneCanCreate")) {
-			parent.getLogger().finer("Anyone is allowed to create, letting "
-					+ p.getName() + " create");
+			parent.getLogger().finer("Anyone is allowed to create, letting " + name + " create");
 		}
 		return parent.getConfig().getBoolean("AnyoneCanCreate");
 	}
 
 	public boolean canModify(Player p) {
+		if (p == null) return false; // Non-players can never edit controller blocks
+		
+		String name = p.getName();
+		
 		if (isAdminPlayer(p)) {
-			parent.getLogger().finer(p.getName() + " is an admin, can modify");
+			parent.getLogger().finer(name + " is an admin, can modify");
 			return true;
 		}
 
 		if (checkPermissionsEx(p, "controllerblock.modifyOther")) {
-			parent.getLogger().finer("PermissionsEx says " + p.getName()
-					+ " has global modify permissions");
+			parent.getLogger().finer("PermissionsEx says " + name + " has global modify permissions");
 			return true;
 		}
 
 		if (parent.getConfig().getBoolean("AnyoneCanModifyOther")) {
 			parent.getLogger().finer("Anyone is allowed to modify anyones blocks, allowing "
-							+ p.getName() + " to modify");
+							+ name + " to modify");
 		}
 		return parent.getConfig().getBoolean("AnyoneCanModifyOther");
 	}
 
 	public boolean canModify(Player p, CBlock c) {
-		if (p.getName().equals(c.getOwner())) {
+		if ((p != null) && p.getName().equals(c.getOwner())) {
 			parent.getLogger().finer(p.getName()
 					+ " owns this controller, allowing to modify");
 			return true;
@@ -115,26 +122,30 @@ public class PermissionHandler {
 	}
 
 	public boolean canDestroy(Player p) {
+		String name = "<non-player>";
+		if (p != null) {
+			name = p.getName();
+		}
+		
 		if (isAdminPlayer(p)) {
-			parent.getLogger().finer(p.getName() + " is an admin, allowing destroy");
+			parent.getLogger().finer(name + " is an admin, allowing destroy");
 			return true;
 		}
 
 		if (checkPermissionsEx(p, "controllerblock.destroyOther")) {
-			parent.getLogger().finer("PermissionsEx says " + p.getName()
-					+ " has global destroy permissions");
+			parent.getLogger().finer("PermissionsEx says " + name + " has global destroy permissions");
 			return true;
 		}
 
 		if (parent.getConfig().getBoolean("AnyoneCanDestroyOther")) {
 			parent.getLogger().finer("Anyone is allowed to destroy anyones blocks, allowing "
-							+ p.getName() + " to destroy");
+							+ name + " to destroy");
 		}
 		return parent.getConfig().getBoolean("AnyoneCanDestroyOther");
 	}
 
 	public boolean canDestroy(Player p, CBlock c) {
-		if (p.getName().equals(c.getOwner())) {
+		if (p != null && p.getName().equals(c.getOwner())) {
 			parent.getLogger().finer(p.getName()
 					+ "owns this controller, allowing them to destroy it");
 			return true;

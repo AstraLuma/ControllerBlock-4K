@@ -14,10 +14,10 @@ permissions:
   controllerblock.*:
     description: Gives access to all ControllerBlock commands
     children:
-      inferno.admin: true
-      inferno.create: true
-      inferno.modifyOther: true
-      inferno.destroyOther: true
+      controllerblock.admin: true
+      controllerblock.create: true
+      controllerblock.modifyOther: true
+      controllerblock.destroyOther: true
   controllerblock.admin:
     description: user isn't restricted by block counts or distance, able to create/modify/destroy other users controllerblocks
     default: op
