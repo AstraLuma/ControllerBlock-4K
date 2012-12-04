@@ -403,6 +403,7 @@ public class CBlockListener implements Runnable, Listener {
 				return;
 			}
 
+			//TODO: Does this need more items in it?
 			if ((e.getBlock().getType().equals(Material.FENCE))
 					|| (e.getBlock().getType().equals(Material.THIN_GLASS))) {
 				return;

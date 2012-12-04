@@ -2,8 +2,10 @@ package com.astro73.controllerblock4k;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+//import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.Configuration;
 
 public class Util {
 	public static double getDistanceBetweenLocations(Location l1, Location l2) {
@@ -16,21 +18,12 @@ public class Util {
 	}
 
 	public static Block getBlockAtLocation(Location l) {
-		return getBlockAtLocation(l, Integer.valueOf(0), Integer.valueOf(0),
-				Integer.valueOf(0));
+		return getBlockAtLocation(l, 0, 0, 0);
 	}
 
-	public static String getSaveFileName(Location l) {
-		String x = String.valueOf(l.getBlockX());
-		String y = String.valueOf(l.getBlockY());
-		String z = String.valueOf(l.getBlockZ());
-		return x + "," + y + "," + z;
-	}
-
-	public static Block getBlockAtLocation(Location l, Integer x, Integer y,
-			Integer z) {
-		return l.getWorld().getBlockAt(l.getBlockX() + x.intValue(),
-				l.getBlockY() + y.intValue(), l.getBlockZ() + z.intValue());
+	public static Block getBlockAtLocation(Location l, int x, int y, int z) {
+		return l.getWorld().getBlockAt(l.getBlockX() + x,
+				l.getBlockY() + y, l.getBlockZ() + z);
 	}
 
 	public static String formatBlockCount(CBlock c) {
@@ -50,7 +43,7 @@ public class Util {
 				+ l.getBlockY() + "," + l.getBlockZ() + ">";
 	}
 
-	public static boolean typeEquals(Material t1, Material t2) {
+/*	public static boolean typeEquals(Material t1, Material t2) {
 		if ((t1.equals(Material.DIRT))
 				|| ((t1.equals(Material.GRASS)) && (t2.equals(Material.DIRT)))
 				|| (t2.equals(Material.GRASS))) {
@@ -64,7 +57,7 @@ public class Util {
 			return true;
 		}
 		return t1.equals(t2);
-	}
+	}*/
 
 	public static boolean locEquals(Location l1, Location l2) {
 		return (l1.getWorld().getName() == l2.getWorld().getName())
@@ -75,5 +68,37 @@ public class Util {
 	
 	public static void sendError(CommandSender player, String msg) {
 		player.sendMessage("§c"+msg);
+	}
+	
+	/**
+	 * Performs some magic to loosen up input requirements for materials.
+	 * Namely, allows for IDs and case-insensitive name.
+	 * 
+	 * @param config The configuration object to do the lookup against
+	 * @param path The path of the option
+	 * @return
+	 */
+	public static Material getMaterial(Configuration config, String path) {
+		Object mid = config.get(path);
+		if (mid instanceof String) {
+			return Material.matchMaterial((String)mid);
+		} else if (mid instanceof Number) {
+			return Material.getMaterial(((Number)mid).intValue());
+		} else {
+			config = config.getDefaults();
+			if (config != null) {
+				return getMaterial(config, path);
+			} else {
+				return null;
+			}
+		}
+	}
+
+	public static Material getMaterial(String value) {
+		if (value.matches("\\d+")) {
+			return Material.getMaterial(Integer.parseInt(value));
+		} else {
+			return Material.matchMaterial(value);
+		}
 	}
 }

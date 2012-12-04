@@ -348,15 +348,15 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public Material getCBlockType() {
-		return Material.getMaterial(getConfig().getString("ControllerBlockType"));
+		return Util.getMaterial(getConfig(), "ControllerBlockType");
 	}
 
 	public Material getSemiProtectedCBlockType() {
-		return Material.getMaterial(getConfig().getString("SemiProtectedControllerBlockType"));
+		return Util.getMaterial(getConfig(), "SemiProtectedControllerBlockType");
 	}
 
 	public Material getUnProtectedCBlockType() {
-		return Material.getMaterial(getConfig().getString("UnProtectedControllerBlockType"));
+		return Util.getMaterial(getConfig(), "UnProtectedControllerBlockType");
 	}
 
 	public boolean isValidMaterial(Material m) {
@@ -365,7 +365,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		}
 		
 		for (String type : getConfig().getStringList("disallowed")) {
-			Material i = Material.getMaterial(type);
+			Material i = Util.getMaterial(type);
 			if (i.equals(m)) {
 				return false;
 			}
@@ -379,7 +379,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		}
 		
 		for (String type : getConfig().getStringList("unprotected")) {
-			Material i = Material.getMaterial(type);
+			Material i = Util.getMaterial(type);
 			if (i.equals(m)) {
 				return true;
 			}
