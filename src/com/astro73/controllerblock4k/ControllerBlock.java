@@ -1,10 +1,7 @@
 package com.astro73.controllerblock4k;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.avaje.ebean.ExpressionList;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -38,11 +36,15 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 
 	public HashMap<Player, CBlock> map = new HashMap<Player, CBlock>();
 
-	public List<CBlock> blocks = new ArrayList<CBlock>();
-
 	HashMap<String, CBlock> movingCBlock = new HashMap<String, CBlock>();
 	HashMap<String, Location> moveHere = new HashMap<String, Location>();
-
+	
+	private static ControllerBlock instance = null;
+	
+	public ControllerBlock() {
+		instance = this;
+	}
+	
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
 	}
@@ -81,7 +83,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			if (getServer().getScheduler().scheduleSyncDelayedTask(this, this,
 					1L) == -1) {
 				getLogger().severe("Failed to schedule loadData, loading now");
-				loadData();
+				//TODO: Pre-load ebean data based on loaded chunks
 			}
 			getLogger().info("Events registered");
 			beenEnabled = true;
@@ -213,7 +215,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 
 	public CBlock createCBlock(Location l, String o, CBlock.Protection pl) {
 		CBlock c = new CBlock(this, l, o, pl);
-		blocks.add(c);
+		getDatabase().save(c);
 		return c;
 	}
 
@@ -232,8 +234,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		} else {
 			block.destroyWithOutDrops();
 		}
-		blocks.remove(block);
-		deleteData(l);
+		getDatabase().delete(block);
 		return block;
 	}
 
@@ -243,19 +244,13 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			return block;
 		}
 		block.destroy();
-		blocks.remove(block);
-		deleteData(l);
+		getDatabase().delete(block);
 		return block;
 	}
 
 	public CBlock getCBlock(Location l) {
-		for (Iterator<CBlock> i = blocks.iterator(); i.hasNext();) {
-			CBlock block = i.next();
-			if (Util.locEquals(block.getLoc(), l)) {
-				return block;
-			}
-		}
-		return null;
+		ExpressionList<CBlock> f = Util.FilterLocation(getDatabase().find(CBlock.class), l);
+		return f.findIterate().next();
 	}
 
 	public boolean isControlBlock(Location l) {
@@ -273,78 +268,37 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	/**
 	 * Queries for the given controller block
 	 * @param c Exclude this block, or null
-	 * @param l Location of the block
+	 * @param l Location of serf block, or null
 	 * @param o Is it on, or null if you don't care
 	 * @return
 	 */
 	public CBlock getControllerBlockFor(CBlock c, Location l, Boolean o) {
-		for (Iterator<CBlock> i = blocks.iterator(); i.hasNext();) {
-			CBlock block = i.next();
-
-			if ((c != block)
-					&& ((o == null) || (o.equals(block.isOn())))
-					&& (block.hasBlock(l))) {
-				return block;
-			}
+		//FIXME: LIMIT 1
+		ExpressionList<CBlock> where = getDatabase().find(CBlock.class).where();
+		if (c != null) {
+			where.ne("id", c.id);
 		}
-		return null;
+		if (l != null) {
+			//FIXME: Subquery
+			assert false: "Need to implement location querying";
+		}
+		if (o != null) {
+			where.eq("on", o);
+		}
+		return where.findUnique();
 	}
 
 	public CBlock moveControllerBlock(CBlock c, Location l) {
-		Iterator<BlockDesc> oldBlockDescs = c.iterator();
+		Iterator<BlockDesc> oldBlockDescs = c.placedBlocks.iterator(); //FIXME: Query
 		CBlock newC = createCBlock(l, c.getOwner(), c.protectedLevel);
 		if (c.isOn()) {
 			while (oldBlockDescs.hasNext()) {
-				newC.addBlock(oldBlockDescs.next().loc.getBlock());
+				newC.addBlock(oldBlockDescs.next().getLocation().getBlock());
 			}
-			destroyCBlock(c.getLoc(), false);
+			destroyCBlock(c.getLocation(), false);
 			return newC;
 		}
 		return null;
-	}
-
-	public CBlockStore getStore(CBlockStore store) {
-		if (store == null) {
-			store = getStore();
-		}
-		return store;
-	}
-
-	public CBlockStore getStore() {
-		try {
-			return new CBlockStore(getConfig());
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			getLogger().throwing("CBlockStore", "<constructor>", e);
-			return null;
-		}
-	}
-
-	public void loadData() {
-		int i = 0;
-		CBlockStore store = getStore();
-		for (CBlock lord : store.loadAllLords(this)) {
-			this.blocks.add(lord);
-			i++;
-		}
-		getLogger().info("Loaded SQL data - " + i + " ControllerBlocks loaded");
-	}
-
-	public void saveData(CBlockStore store, CBlock cblock) {
-		getLogger().fine("Saving ControllerBlock data");
-		store = getStore(store);
-		cblock.serialize(store);
-	}
-
-	public void deleteData(Location l) {
-		CBlockStore store = getStore();
-		boolean success = store.removeLord(l);
-		if (!success) {
-			getLogger().warning("Error when attempting to delete block: "
-					+ l.toString());
-		} else {
-
-		}
 	}
 
 	public Material getCBlockType() {
@@ -388,11 +342,14 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public void run() {
-		loadData();
+		//TODO: preloadData();
 	}
 
-	public void removeCBlock(CBlock cb, long id) {
-		blocks.remove(cb);
-		getStore().removeLord(id);
+	public void removeCBlock(CBlock cb) {
+		getDatabase().delete(cb);
+	}
+
+	public static ControllerBlock getInstance() {
+		return instance;
 	}
 }

@@ -1,11 +1,16 @@
 package com.astro73.controllerblock4k;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,24 +20,57 @@ import org.bukkit.block.BlockState;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.RedstoneWire;
 
-public class CBlock implements Iterable<BlockDesc> {
-	private Location blockLocation = null;
-	private List<BlockDesc> placedBlocks = new ArrayList<BlockDesc>();
-	private String owner = null;
+import com.avaje.ebean.EbeanServer;
 
-	private ControllerBlock parent = null;
+@Entity
+@Table(name="ControllerBlock_Lord")
+public class CBlock {
+	@Id
+	long id = 0;
+	
+	@Column(name="world")
+	String world;
+	@Column(name="x")
+	int x;
+	@Column(name="y")
+	int y;
+	@Column(name="z")
+	int z;
+	
+	@Column(name="protection")
+	Protection protectedLevel = Protection.PROTECTED;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	Set<BlockDesc> placedBlocks;
+	
+	@Column(name="owner")
+	String owner = null;
+
+	@Column(name="on")
 	private boolean on = false;
+	
+	@Transient
+	private Location loc = null;
+	@Transient
+	private ControllerBlock parent = null;
+	@Transient
 	private boolean edit = false;
-	public Protection protectedLevel = Protection.PROTECTED;
-	private long id = 0;
 	
 	public enum Protection {
 		PROTECTED, SEMIPROTECTED, UNPROTECTED
 	}
 	
+	public CBlock() {
+		parent = ControllerBlock.getInstance();
+	}
+	
 	public CBlock(ControllerBlock p, Location l, String o, Protection pl) {
 		parent = p;
-		blockLocation = l;
+		loc = l;
+		world = l.getWorld().getName();
+		x = l.getBlockX();
+		y = l.getBlockY();
+		z = l.getBlockZ();
 		owner = o;
 		protectedLevel = pl;
 	}
@@ -40,7 +78,11 @@ public class CBlock implements Iterable<BlockDesc> {
 	public CBlock(ControllerBlock p, long i, Location l, String o, Protection pl) {
 		parent = p;
 		id = i;
-		blockLocation = l;
+		loc = l;
+		world = l.getWorld().getName();
+		x = l.getBlockX();
+		y = l.getBlockY();
+		z = l.getBlockZ();
 		owner = o;
 		protectedLevel = pl;
 	}
@@ -53,51 +95,44 @@ public class CBlock implements Iterable<BlockDesc> {
 		return owner;
 	}
 
-	public Location getLoc() {
-		return blockLocation;
-	}
-
-	@Override
-	public Iterator<BlockDesc> iterator() {
-		return placedBlocks.iterator();
+	public Location getLocation() {
+		if (loc == null) {
+			loc = new Location(Util.getWorld(world), x, y, z);
+		}
+		return loc;
 	}
 	
+	@Deprecated
+	public Location getLoc() {
+		return getLocation();
+	}
+
 	public boolean addBlock(Block b) {
 		Location bloc = b.getLocation();
-		if (placedBlocks.isEmpty()) {
-			placedBlocks
-					.add(new BlockDesc(bloc, b.getType(), Byte.valueOf(b.getData())));
-			return true;
-		}
-		;
-		for (ListIterator<BlockDesc> i = placedBlocks.listIterator(); i.hasNext();) {
-			BlockDesc loc = i.next();
-			if (bloc.getBlockY() > loc.loc.getBlockY()) {
-				i.previous();
-				i.add(new BlockDesc(bloc, b.getType(), Byte.valueOf(b.getData())));
-				return true;
-			}
-		}
 		placedBlocks.add(new BlockDesc(bloc, b.getType(), Byte.valueOf(b.getData())));
 		return true;
 	}
 
 	public boolean delBlock(Block b) {
-		Location u = b.getLocation();
-		for (Iterator<BlockDesc> i = placedBlocks.iterator(); i.hasNext();) {
-			Location t = i.next().loc;
-			if (t.equals(u)) {
-				i.remove();
-				CBlock check = parent.getControllerBlockFor(this, u, true);
-				if (check != null) {
-					BlockDesc bd = check.getBlock(u);
-					b.setType(bd.mat);
-					b.setData(bd.data);
-				}
-				return true;
-			}
+		EbeanServer db = parent.getDatabase();
+		// Find BlockDesc
+		BlockDesc bd = Util.FilterLocation(db.find(BlockDesc.class).where(), b.getLocation())
+			.eq("lord", this).findUnique();
+		
+		// Remove
+		db.delete(bd);
+		
+		// Find other available BlockDescs here
+		BlockDesc replacement = Util.FilterLocation(db.find(BlockDesc.class).where(), b.getLocation())
+			.ne("lord", this)
+			.eq("lord.on", true).findIterate().next();
+		
+		if (replacement == null) {
+			return false;
+		} else {
+			replacement.apply(true);
+			return true;
 		}
-		return false;
 	}
 
 	public int numBlocks() {
@@ -106,7 +141,7 @@ public class CBlock implements Iterable<BlockDesc> {
 
 	public BlockDesc getBlock(Location l) {
 		for (BlockDesc d : placedBlocks) {
-			if (d.loc.equals(l)) {
+			if (d.getLocation().equals(l)) {
 				return d;
 			}
 		}
@@ -119,7 +154,7 @@ public class CBlock implements Iterable<BlockDesc> {
 
 	public void updateBlock(Block b) {
 		for (BlockDesc d : placedBlocks) {
-			if (d.loc.equals(b.getLocation())) {
+			if (d.getLocation().equals(b.getLocation())) {
 				d.data = b.getState().getData().getData();
 				return;
 			}
@@ -135,8 +170,8 @@ public class CBlock implements Iterable<BlockDesc> {
 		if (edit) {
 			turnOn();
 		} else {
-			parent.saveData(null, this);
 			doRedstoneCheck();
+			parent.getDatabase().save(this);
 		}
 	}
 
@@ -167,11 +202,11 @@ public class CBlock implements Iterable<BlockDesc> {
 						j = i;
 						i -= i;
 					}
-					blockLocation.getWorld().dropItemNaturally(blockLocation, new ItemStack(mat, j));
+					loc.getWorld().dropItemNaturally(loc, new ItemStack(mat, j));
 				}
 			}
 		}
-		parent.removeCBlock(this, this.id);	
+		parent.removeCBlock(this);	
 	}
 
 	public boolean isOn() {
@@ -179,7 +214,7 @@ public class CBlock implements Iterable<BlockDesc> {
 	}
 
 	public void doRedstoneCheck() {
-		Block check = Util.getBlockAtLocation(blockLocation).getRelative(
+		Block check = Util.getBlockAtLocation(loc).getRelative(
 				BlockFace.UP);
 		doRedstoneCheck(check.getState());
 	}
@@ -204,27 +239,28 @@ public class CBlock implements Iterable<BlockDesc> {
 	}
 
 	public void turnOff() {
+		on = false;
+		EbeanServer db = parent.getDatabase();
+		db.save(this);
 		for (BlockDesc d : placedBlocks) {
-			Location loc = d.loc;
-			CBlock check = parent.getControllerBlockFor(this, loc, true);
-			Block cur = loc.getWorld().getBlockAt(loc.getBlockX(),
-					loc.getBlockY(), loc.getBlockZ());
-			boolean applyPhysics = true;
+			Location loc = d.getLocation();
 
-			if (check != null) {
-				cur.setTypeIdAndData(d.mat.getId(),
-						check.getBlock(loc).data, applyPhysics);
-			} else if (protectedLevel == Protection.PROTECTED) {
-				cur.setType(Material.AIR);
+			// Find other available BlockDescs here
+			BlockDesc replacement = Util.FilterLocation(db.find(BlockDesc.class).where(), loc)
+				.ne("lord", this)
+				.eq("lord.on", true).findIterate().next();
+			
+			if (replacement == null) {
+			} else {
+				replacement.apply(true);
 			}
 		}
-		on = false;
 	}
 
 	public void turnOn() {
 		for (BlockDesc b : placedBlocks) {
-			Location loc = b.loc;
-			Block cur = loc.getWorld().getBlockAt(loc);
+			Location loc = b.getLocation();
+			Block cur = loc.getBlock();
 			boolean applyPhysics = true;
 			if (protectedLevel == Protection.PROTECTED) {
 				if ((cur.getType().equals(Material.SAND))
@@ -240,14 +276,14 @@ public class CBlock implements Iterable<BlockDesc> {
 					applyPhysics = false;
 				}
 			}
-			cur.setTypeIdAndData(b.mat.getId() , b.data, applyPhysics);
+			b.apply(applyPhysics);
 		}
 		on = true;
 	}
 
 	public void turnOn(Location l) {
 		for (BlockDesc b : placedBlocks) {
-			if (l.equals(b.loc)) {
+			if (l.equals(b.getLocation())) {
 				Block cur = Util.getBlockAtLocation(l);
 				boolean applyPhysics = true;
 				if (protectedLevel == Protection.PROTECTED) {
@@ -256,19 +292,6 @@ public class CBlock implements Iterable<BlockDesc> {
 				cur.setTypeIdAndData(b.mat.getId(), b.data,
 						applyPhysics);
 			}
-		}
-	}
-
-	public void serialize(CBlockStore store) {
-		this.id = store.storeLordBlock(this.id, this.blockLocation, this.owner, this.protectedLevel);
-		for (BlockDesc b: this.placedBlocks) {
-			store.storeSerfBlock(this.id, b);
-		}
-	}
-
-	public void loadSerfs(CBlockStore store) {
-		for (BlockDesc bd : store.loadAllSerfs(parent, id)) {
-			placedBlocks.add(bd);
 		}
 	}
 

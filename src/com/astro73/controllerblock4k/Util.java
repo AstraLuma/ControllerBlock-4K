@@ -2,10 +2,15 @@ package com.astro73.controllerblock4k;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 //import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
+
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.Filter;
+import com.avaje.ebean.Query;
 
 public class Util {
 	public static double getDistanceBetweenLocations(Location l1, Location l2) {
@@ -100,5 +105,31 @@ public class Util {
 		} else {
 			return Material.matchMaterial(value);
 		}
+	}
+	
+	public static World getWorld(ControllerBlock parent, String world) {
+		return parent.getServer().getWorld(world);
+	}
+
+	public static World getWorld(String world) {
+		return getWorld(ControllerBlock.getInstance(), world);
+	}
+	
+	public static <T> Filter<T> FilterLocation(Filter<T> filter, Location loc) {
+		return filter.eq("world", loc.getWorld().getName())
+				.eq("x", loc.getBlockX())
+				.eq("y", loc.getBlockY())
+				.eq("z", loc.getBlockZ());
+	}
+
+	public static <T> ExpressionList<T> FilterLocation(Query<T> query, Location loc) {
+		return FilterLocation(query.where(), loc);
+	}
+
+	public static <T> ExpressionList<T> FilterLocation(ExpressionList<T> elist, Location loc) {
+		return elist.eq("world", loc.getWorld().getName())
+				.eq("x", loc.getBlockX())
+				.eq("y", loc.getBlockY())
+				.eq("z", loc.getBlockZ());
 	}
 }
