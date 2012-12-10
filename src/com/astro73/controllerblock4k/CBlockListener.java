@@ -28,19 +28,19 @@ public class CBlockListener implements Runnable, Listener {
 	}
 
 	public Player getPlayerEditing(CBlock c) {
-		for (@SuppressWarnings("rawtypes")
-		Map.Entry e : parent.map.entrySet()) {
-			if (((CBlock) e.getValue()).equals(c)) {
-				return (Player) e.getKey();
+		for (Map.Entry<Player, CBlock> e : parent.editing.entrySet()) {
+			if (e.getValue().equals(c)) {
+				return e.getKey();
 			}
 		}
 		return null;
 	}
 
 	public void removePlayersEditing(CBlock c) {
-		Player p;
-		while ((p = getPlayerEditing(c)) != null) {
-			parent.map.remove(p);
+		for (Map.Entry<Player, CBlock> e : parent.editing.entrySet()) {
+			if (e.getValue().equals(c)) {
+				parent.editing.remove(e.getKey());
+			}
 		}
 	}
 
@@ -81,16 +81,18 @@ public class CBlockListener implements Runnable, Listener {
 					|| item.equals(Material.IRON_PICKAXE)
 					|| item.equals(Material.GOLD_PICKAXE)
 					|| item.equals(Material.DIAMOND_PICKAXE)) {
+				//TODO: Allow for other items
 				return;
 			}
 			
-			CBlock conBlock = parent.map.get(player);
+			CBlock conBlock = parent.editing.get(player);
 			if (conBlock != null) { // Only happens if player != null
+				assert player != null;
 				if (parent.isControlBlock(b.getLocation())) {
 					conBlock.editBlock(false);
-					parent.map.remove(player);
+					parent.editing.remove(player);
 
-					if (Util.locEquals(conBlock.getLoc(), b.getLocation())) {
+					if (Util.locEquals(conBlock.getLocation(), b.getLocation())) {
 						player.sendMessage("Finished editing ControllerBlock");
 						e.setCancelled(true);
 						return;
@@ -121,6 +123,7 @@ public class CBlockListener implements Runnable, Listener {
 						cBTypeStr = "unprotected";
 						cBType = CBlock.Protection.UNPROTECTED;
 					} else {
+						e.setCancelled(true);
 						return;
 					}
 					
@@ -171,7 +174,7 @@ public class CBlockListener implements Runnable, Listener {
 					}
 				}
 
-				parent.map.put(player, conBlock);
+				parent.editing.put(player, conBlock);
 				conBlock.editBlock(true);
 				player.sendMessage("You're now editing this block "
 						+ Util.formatBlockCount(conBlock));
@@ -196,7 +199,7 @@ public class CBlockListener implements Runnable, Listener {
 			}
 		}
 
-		conBlock = parent.map.get(player);
+		conBlock = parent.editing.get(player);
 		if ((conBlock != null) && (conBlock.hasBlock(b.getLocation()))
 				/*&& (conBlock.getType().equals(b.getType()))*/) {
 			if (conBlock.delBlock(b)) {
@@ -213,11 +216,7 @@ public class CBlockListener implements Runnable, Listener {
 					}
 					if (player != null)
 						player.sendMessage("This block is controlled by a controller block at "
-							+ conBlock.getLoc().getBlockX()
-							+ ", "
-							+ conBlock.getLoc().getBlockY()
-							+ ", "
-							+ conBlock.getLoc().getBlockZ());
+							+ Util.formatLocation(conBlock.getLocation()));
 					e.setCancelled(true);
 					break;
 				case REMOVE:
@@ -266,14 +265,14 @@ public class CBlockListener implements Runnable, Listener {
 			return;
 		}
 		
-		CBlock conBlock = parent.map.get(player);
+		CBlock conBlock = parent.editing.get(player);
 		if (conBlock != null) {
 			assert player != null;
 			if (parent.isControlBlock(b.getLocation())) {
 				conBlock.editBlock(false);
-				parent.map.remove(player);
+				parent.editing.remove(player);
 
-				if (Util.locEquals(conBlock.getLoc(), b.getLocation())) {
+				if (Util.locEquals(conBlock.getLocation(), b.getLocation())) {
 					player.sendMessage("Finished editing ControllerBlock");
 					return;
 				}
@@ -350,7 +349,7 @@ public class CBlockListener implements Runnable, Listener {
 				}
 			}
 
-			parent.map.put(player, conBlock);
+			parent.editing.put(player, conBlock);
 			conBlock.editBlock(true);
 			player.sendMessage("You're now editing this block " + Util.formatBlockCount(conBlock));
 		}
@@ -362,7 +361,7 @@ public class CBlockListener implements Runnable, Listener {
 			return;
 		}
 		Player player = e.getPlayer();
-		CBlock conBlock = parent.map.get(player);
+		CBlock conBlock = parent.editing.get(player);
 		if (conBlock == null) { // Always happens for non-players
 			return;
 		}
@@ -380,7 +379,7 @@ public class CBlockListener implements Runnable, Listener {
 		int maxdist = parent.getConfig().getInt("MaxDistanceFromController");
 		if ((maxdist != 0)
 				&& (!parent.getPerm().isAdminPlayer(player))
-				&& (Util.getDistanceBetweenLocations(conBlock.getLoc(), e.getBlock().getLocation()) > maxdist)
+				&& (Util.getDistanceBetweenLocations(conBlock.getLocation(), e.getBlock().getLocation()) > maxdist)
 				) {
 			player.sendMessage("This block is too far away from the controller block to be controlled");
 			return;
@@ -531,12 +530,11 @@ public class CBlockListener implements Runnable, Listener {
 				}
 			}*/
 		}
-		for (Map.Entry<Player, CBlock> e : parent.map.entrySet()) {
-			Iterator<BlockDesc> i = e.getValue().iterator();
-			while (i.hasNext()) {
-				BlockDesc d = i.next();
-				Block b = Util.getBlockAtLocation(d.loc);
-				d.data = b.getState().getData().getData();
+		for (Map.Entry<Player, CBlock> e : parent.editing.entrySet()) {
+			Iterator<BlockDesc> ibd = parent.getDatabase().find(BlockDesc.class).where().eq("lord", e.getValue()).findIterate();
+			while (ibd.hasNext()) {
+				BlockDesc bd = ibd.next();
+				bd.apply(false);
 			}
 		}
 	}

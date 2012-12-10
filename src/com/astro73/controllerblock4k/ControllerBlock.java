@@ -1,7 +1,6 @@
 package com.astro73.controllerblock4k;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,16 +24,14 @@ import com.sk89q.worldedit.regions.Region;
 public class ControllerBlock extends JavaPlugin implements Runnable {
 	private PermissionHandler permissionHandler = new PermissionHandler(this);
 	private final CBlockListener blockListener = new CBlockListener(this);
-	private final CRedstoneListener redstoneListener = new CRedstoneListener(
-			this);
+	private final CRedstoneListener redstoneListener = new CRedstoneListener(this);
 	private final CPlayerListener playerListener = new CPlayerListener(this);
-	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(
-			this);
+	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(this);
 
 	public boolean blockPhysicsEditCheck = false;
 	private boolean beenEnabled = false;
 
-	public HashMap<Player, CBlock> map = new HashMap<Player, CBlock>();
+	public HashMap<Player, CBlock> editing = new HashMap<Player, CBlock>();
 
 	HashMap<String, CBlock> movingCBlock = new HashMap<String, CBlock>();
 	HashMap<String, Location> moveHere = new HashMap<String, Location>();
@@ -62,8 +59,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 		if (!beenEnabled) {
 			getServer().getPluginManager().registerEvents(blockListener, this);
 			getServer().getPluginManager().registerEvents(playerListener, this);
-			if (getServer().getScheduler().scheduleSyncRepeatingTask(this,
-					blockListener, 1L, 1L) == -1) {
+			if (getServer().getScheduler().scheduleSyncRepeatingTask(this, blockListener, 1L, 1L) == -1) {
 				getLogger().warning("Scheduling BlockListener anti-dupe check failed, falling back to old BLOCK_PHYSICS event");
 				blockPhysicsEditCheck = true;
 			}
@@ -80,8 +76,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			if (config.getBoolean("QuickRedstoneCheck")) {
 				getServer().getPluginManager().registerEvents(redstoneListener, this);
 			}
-			if (getServer().getScheduler().scheduleSyncDelayedTask(this, this,
-					1L) == -1) {
+			if (getServer().getScheduler().scheduleSyncDelayedTask(this, this, 1L) == -1) {
 				getLogger().severe("Failed to schedule loadData, loading now");
 				//TODO: Pre-load ebean data based on loaded chunks
 			}
@@ -107,7 +102,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 						sender.sendMessage(new String[] {
 								"Aliases: add, we, a", "Usage: /cblock add",
 								"Adds the current WorldEdit selection to the current ControllerBlock." });
-					} else if (args[1].equalsIgnoreCase("REMOVE")
+					} else if (args[1].equalsIgnoreCase("REMOVE") 
 							|| args[1].equalsIgnoreCase("s")) {
 						sender.sendMessage(new String[] { "Aliases: REMOVE, s",
 								"Usage: /cblock REMOVE",
@@ -130,7 +125,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					sender.sendMessage("Must be a player");
 					return false;
 				}
-				CBlock conBlock = map.get(player);
+				CBlock conBlock = editing.get(player);
 				if (!this.getPerm().canModify(player, conBlock)) {
 					player.sendMessage("You're not allowed to modify this ControllerBlock");
 					return false;
@@ -168,7 +163,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 					sender.sendMessage("Must be a player");
 					return false;
 				}
-				CBlock conBlock = map.get(player);
+				CBlock conBlock = editing.get(player);
 				if (!this.getPerm().canModify(player, conBlock)) {
 					player.sendMessage("You're not allowed to modify this ControllerBlock");
 					return false;
@@ -289,16 +284,8 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public CBlock moveControllerBlock(CBlock c, Location l) {
-		Iterator<BlockDesc> oldBlockDescs = c.placedBlocks.iterator(); //FIXME: Query
-		CBlock newC = createCBlock(l, c.getOwner(), c.protectedLevel);
-		if (c.isOn()) {
-			while (oldBlockDescs.hasNext()) {
-				newC.addBlock(oldBlockDescs.next().getLocation().getBlock());
-			}
-			destroyCBlock(c.getLocation(), false);
-			return newC;
-		}
-		return null;
+		c.setLocation(l);
+		return c;
 	}
 
 	public Material getCBlockType() {

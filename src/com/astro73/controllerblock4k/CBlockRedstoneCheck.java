@@ -1,6 +1,5 @@
 package com.astro73.controllerblock4k;
 
-import java.util.Iterator;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -13,19 +12,15 @@ public class CBlockRedstoneCheck implements Runnable {
 	}
 
 	public void run() {
-		Iterator<CBlock> i = parent.blocks.iterator();
-		while (i.hasNext()) {
-			CBlock c = i.next();
+		for (CBlock c : parent.getDatabase().find(CBlock.class).findList()) {
 			if (!c.isBeingEdited()) {
-				Block b = Util.getBlockAtLocation(c.getLoc());
+				Block b = Util.getBlockAtLocation(c.getLocation());
 				boolean on = c.isOn();
-				if (b.getRelative(BlockFace.UP).getType()
-						.equals(Material.REDSTONE_TORCH_ON)) {
+				if (b.getRelative(BlockFace.UP).getType().equals(Material.REDSTONE_TORCH_ON)) {
 					if (on) {
 						c.turnOff();
 					}
-				} else if (b.getRelative(BlockFace.UP).getType()
-						.equals(Material.REDSTONE_TORCH_OFF)) {
+				} else if (b.getRelative(BlockFace.UP).getType().equals(Material.REDSTONE_TORCH_OFF)) {
 					if (!on) {
 						c.turnOn();
 					}

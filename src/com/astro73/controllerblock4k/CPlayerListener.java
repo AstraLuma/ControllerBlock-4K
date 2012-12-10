@@ -35,7 +35,7 @@ public class CPlayerListener implements Listener {
 					&& (e.getItem().getType().equals(Material.STICK))) {
 				if (parent.movingCBlock.containsKey(player.getName())) {
 					CBlock c = parent.movingCBlock.get(player.getName());
-					if (c.getLoc().getBlock().getType().equals(block.getType())) {
+					if (c.getLocation().getBlock().getType().equals(block.getType())) {
 						parent.moveHere.put(player.getName(),
 								block.getLocation());
 						if (parent.moveControllerBlock(c, block.getLocation()) != null) {

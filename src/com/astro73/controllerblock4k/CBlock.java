@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.RedstoneWire;
 
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.ExpressionList;
 
 @Entity
 @Table(name="ControllerBlock_Lord")
@@ -41,7 +42,7 @@ public class CBlock {
 	Protection protectedLevel = Protection.PROTECTED;
 	
 	@OneToMany(cascade=CascadeType.ALL)
-	Set<BlockDesc> placedBlocks;
+	private Set<BlockDesc> placedBlocks;
 	
 	@Column(name="owner")
 	String owner = null;
@@ -102,14 +103,27 @@ public class CBlock {
 		return loc;
 	}
 	
+	public void setLocation(Location l) {
+		loc = l;
+		world = l.getWorld().getName();
+		x = l.getBlockX();
+		y = l.getBlockY();
+		z = l.getBlockZ();
+	}
+	
 	@Deprecated
 	public Location getLoc() {
 		return getLocation();
 	}
 
 	public boolean addBlock(Block b) {
-		Location bloc = b.getLocation();
-		placedBlocks.add(new BlockDesc(bloc, b.getType(), Byte.valueOf(b.getData())));
+		BlockDesc bd = new BlockDesc(b);
+		return addBlock(bd);
+	}
+
+	public boolean addBlock(BlockDesc bd) {
+		parent.getDatabase().save(bd);
+		placedBlocks.add(bd);
 		return true;
 	}
 
@@ -140,24 +154,33 @@ public class CBlock {
 	}
 
 	public BlockDesc getBlock(Location l) {
-		for (BlockDesc d : placedBlocks) {
-			if (d.getLocation().equals(l)) {
-				return d;
-			}
-		}
-		return null;
+		return findBlocks(l).findUnique();
 	}
 
 	public boolean hasBlock(Location l) {
 		return getBlock(l) != null;
 	}
-
+	
+	/**
+	 * Find all serfs at location
+	 * @param l The location
+	 * @return An ebean where() clause
+	 */
+	protected ExpressionList<BlockDesc> findBlocks(Location l) {
+		return Util.FilterLocation(parent.getDatabase().find(BlockDesc.class), l).eq("lord", this);
+	}
+	
+	/**
+	 * Find all serfs
+	 * @return An ebean where() clause
+	 */
+	protected ExpressionList<BlockDesc> findBlocks() {
+		return parent.getDatabase().find(BlockDesc.class).where().eq("lord", this);
+	}
+	
 	public void updateBlock(Block b) {
-		for (BlockDesc d : placedBlocks) {
-			if (d.getLocation().equals(b.getLocation())) {
-				d.data = b.getState().getData().getData();
-				return;
-			}
+		for (BlockDesc d : findBlocks(b.getLocation()).findList()) {
+			d.update(b);
 		}
 	}
 
@@ -282,17 +305,8 @@ public class CBlock {
 	}
 
 	public void turnOn(Location l) {
-		for (BlockDesc b : placedBlocks) {
-			if (l.equals(b.getLocation())) {
-				Block cur = Util.getBlockAtLocation(l);
-				boolean applyPhysics = true;
-				if (protectedLevel == Protection.PROTECTED) {
-					applyPhysics = false;
-				}
-				cur.setTypeIdAndData(b.mat.getId(), b.data,
-						applyPhysics);
-			}
-		}
+		BlockDesc b = findBlocks(l).findUnique();
+		b.apply(true);
 	}
 
 }
