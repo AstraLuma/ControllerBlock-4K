@@ -1,6 +1,10 @@
 package com.astro73.controllerblock4k;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import javax.persistence.PersistenceException;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -56,6 +60,7 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public void onEnable() {
+		setupDatabase();
 		if (!beenEnabled) {
 			getServer().getPluginManager().registerEvents(blockListener, this);
 			getServer().getPluginManager().registerEvents(playerListener, this);
@@ -83,6 +88,25 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			getLogger().info("Events registered");
 			beenEnabled = true;
 		}
+	}
+
+	private void setupDatabase() {
+		try {
+			getDatabase().find(CBlock.class).findRowCount();
+			getDatabase().find(BlockDesc.class).findRowCount();
+		} catch (PersistenceException ex) {
+			System.out.println("Installing database for "
+					+ getDescription().getName() + " due to first time usage");
+			installDDL();
+		}
+	}
+
+	@Override
+	public List<Class<?>> getDatabaseClasses() {
+		List<Class<?>> list = new ArrayList<Class<?>>();
+		list.add(CBlock.class);
+		list.add(BlockDesc.class);
+		return list;
 	}
 
 	public boolean onCommand(CommandSender sender, Command command,
