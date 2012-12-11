@@ -47,7 +47,7 @@ public class CBlock {
 	@Column(name="owner")
 	String owner = null;
 
-	@Column(name="on")
+	@Column(name="ison")
 	private boolean on = false;
 	
 	@Transient

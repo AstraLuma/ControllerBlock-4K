@@ -91,11 +91,12 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	private void setupDatabase() {
+		getLogger().info("Using DB platform: " + getDatabase());
 		try {
 			getDatabase().find(CBlock.class).findRowCount();
 			getDatabase().find(BlockDesc.class).findRowCount();
 		} catch (PersistenceException ex) {
-			System.out.println("Installing database for "
+			getLogger().info("Installing database for "
 					+ getDescription().getName() + " due to first time usage");
 			installDDL();
 		}
