@@ -33,7 +33,6 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(this);
 
 	public boolean blockPhysicsEditCheck = false;
-	private boolean beenEnabled = false;
 
 	public HashMap<Player, CBlock> editing = new HashMap<Player, CBlock>();
 
@@ -61,33 +60,30 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 
 	public void onEnable() {
 		setupDatabase();
-		if (!beenEnabled) {
-			getServer().getPluginManager().registerEvents(blockListener, this);
-			getServer().getPluginManager().registerEvents(playerListener, this);
-			if (getServer().getScheduler().scheduleSyncRepeatingTask(this, blockListener, 1L, 1L) == -1) {
-				getLogger().warning("Scheduling BlockListener anti-dupe check failed, falling back to old BLOCK_PHYSICS event");
-				blockPhysicsEditCheck = true;
-			}
-			FileConfiguration config = getConfig();
-			if (config.getBoolean("DisableEditDupeProtection")) {
-				getLogger().warning("Edit dupe protection has been disabled, you're on your own from here");
-			}
-			if (!config.getBoolean("QuickRedstoneCheck")) {
-				if (getServer().getScheduler().scheduleSyncRepeatingTask(this, checkRunner, 1L, 1L) == -1) {
-					getLogger().warning("Scheduling CBlockRedstoneCheck task failed, falling back to quick REDSTONE_CHANGE event");
-					config.set("QuickRedstoneCheck", true);
-				}
-			}
-			if (config.getBoolean("QuickRedstoneCheck")) {
-				getServer().getPluginManager().registerEvents(redstoneListener, this);
-			}
-			if (getServer().getScheduler().scheduleSyncDelayedTask(this, this, 1L) == -1) {
-				getLogger().severe("Failed to schedule loadData, loading now");
-				//TODO: Pre-load ebean data based on loaded chunks
-			}
-			getLogger().info("Events registered");
-			beenEnabled = true;
+		getServer().getPluginManager().registerEvents(blockListener, this);
+		getServer().getPluginManager().registerEvents(playerListener, this);
+		if (getServer().getScheduler().scheduleSyncRepeatingTask(this, blockListener, 1L, 1L) == -1) {
+			getLogger().warning("Scheduling BlockListener anti-dupe check failed, falling back to old BLOCK_PHYSICS event");
+			blockPhysicsEditCheck = true;
 		}
+		FileConfiguration config = getConfig();
+		if (config.getBoolean("DisableEditDupeProtection")) {
+			getLogger().warning("Edit dupe protection has been disabled, you're on your own from here");
+		}
+		if (!config.getBoolean("QuickRedstoneCheck")) {
+			if (getServer().getScheduler().scheduleSyncRepeatingTask(this, checkRunner, 1L, 1L) == -1) {
+				getLogger().warning("Scheduling CBlockRedstoneCheck task failed, falling back to quick REDSTONE_CHANGE event");
+				config.set("QuickRedstoneCheck", true);
+			}
+		}
+		if (config.getBoolean("QuickRedstoneCheck")) {
+			getServer().getPluginManager().registerEvents(redstoneListener, this);
+		}
+		if (getServer().getScheduler().scheduleSyncDelayedTask(this, this, 1L) == -1) {
+			getLogger().severe("Failed to schedule loadData, loading now");
+			//TODO: Pre-load ebean data based on loaded chunks
+		}
+		getLogger().info("Events registered");
 	}
 
 	private void setupDatabase() {
