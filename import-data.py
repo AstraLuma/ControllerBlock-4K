@@ -4,7 +4,7 @@
 """
 Import data from other versions of ControllerBlock.
 """
-import argparse, sys, MySQLdb
+import argparse, sys, mysql.connector
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("oldfiles", metavar='F', type=file, nargs='+',
                     help="The data file(s) to read from.")
@@ -218,7 +218,7 @@ if __name__ == '__main__':
 		if args.dbuser:     connargs['user'] = args.dbuser
 		if args.dbpassword: connargs['passwd'] = args.dbpassword
 		if args.dbname:     connargs['db'] = args.dbname
-		conn = MySQLdb.connect(**connargs)
+		conn = mysql.connector.connect(**connargs)
 		execr.cursor = conn.cursor()
 	
 	if args.sqlfile:
