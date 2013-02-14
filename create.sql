@@ -10,7 +10,7 @@ CREATE  TABLE IF NOT EXISTS `ControllerBlock_Lord` (
   `owner` VARCHAR(45) NOT NULL ,
   `protection` ENUM('PROTECTED', 'SEMIPROTECTED', 'UNPROTECTED') NOT NULL DEFAULT 'PROTECTED' ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `LOCATION` (`x` ASC, `y` ASC, `z` ASC, `world` ASC) ,
+  UNIQUE INDEX `LOCATION` (`world` ASC, `x` ASC, `y` ASC, `z` ASC) ,
   INDEX `OWNER` (`owner` ASC) ,
   INDEX `WORLD` (`world` ASC) )
 ENGINE = InnoDB
