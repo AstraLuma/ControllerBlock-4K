@@ -233,7 +233,7 @@ if __name__ == '__main__':
 			lid = execr("INSERT INTO ControllerBlock_Lord SET world = %s, x = %s, y = %s, z = %s, owner = %s, protection = 'PROTECTED';",
 				[lord['world'], lord['x'], lord['y'], lord['z'], lord['owner']])
 			for serf in lord['serfs']:
-				execr("INSERT INTO ControllerBlock_Serf SET world = %s, x = %s, y = %s, z = %s, material = %s,  meta = %s, lord_id = %s;",
+				execr("INSERT INTO ControllerBlock_Serf SET world = %s, x = %s, y = %s, z = %s, material = %s,  meta = %s, lord = %s;",
 				[serf['world'], serf['x'], serf['y'], serf['z'], lord['blockid'], serf['meta'], lid])
 			if args.doit:
 				conn.commit()
