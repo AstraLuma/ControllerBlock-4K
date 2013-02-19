@@ -259,11 +259,16 @@ public class CBlock implements Iterable<BlockDesc> {
 		}
 	}
 
-	public void serialize(CBlockStore store) {
-		this.id = store.storeLordBlock(this.id, this.blockLocation, this.owner, this.protectedLevel);
-		for (BlockDesc b: this.placedBlocks) {
-			store.storeSerfBlock(this.id, b);
-		}
+	public void serialize(final CBlockStore store) {
+		parent.getServer().getScheduler().scheduleSyncDelayedTask(parent, new Runnable() {
+			@Override
+			public void run() {
+				id = store.storeLordBlock(id, blockLocation, owner, protectedLevel);
+				for (BlockDesc b: placedBlocks) {
+					store.storeSerfBlock(id, b);
+				}
+			}
+		}, 1L);
 	}
 
 	public void loadSerfs(CBlockStore store) {

@@ -22,6 +22,8 @@ import org.bukkit.configuration.Configuration;
  */
 public class CBlockStore {
 	private Connection conn;
+	@SuppressWarnings("unused")
+	private ControllerBlock parent;
 
 	private PreparedStatement update_lord, insert_lord, update_serf,
 			insert_serf;
@@ -34,7 +36,8 @@ public class CBlockStore {
 	 * @throws SQLException
 	 *             From JDBC
 	 */
-	public CBlockStore(Configuration config) throws SQLException {
+	public CBlockStore(ControllerBlock cb, Configuration config) throws SQLException {
+		parent = cb;
 		conn = DriverManager.getConnection((String)config.getString("SqlConnection"));
 
 		update_lord = conn
@@ -217,29 +220,34 @@ public class CBlockStore {
 
 		@Override
 		public CBlock next() {
-			if (!hasNext()) {
-				throw new NoSuchElementException();
-			}
-			try {
-				long id = rs.getLong("id");
-				String ws = rs.getString("world");
-				int x = rs.getInt("x");
-				int y = rs.getInt("y");
-				int z = rs.getInt("z");
-				String owner = rs.getString("owner");
-				String ps = rs.getString("protection");
-				CBlock.Protection pl = CBlock.Protection.valueOf(ps);
-				World world = parent.getServer().getWorld(ws);
-				Location loc = new Location(world, x, y, z);
-				CBlock cb = new CBlock(parent, id, loc, owner, pl);
-				cb.loadSerfs(store);
-				return cb;
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			} finally {
-				checked = false;
+			while (true) {
+				if (!hasNext()) {
+					throw new NoSuchElementException();
+				}
+				try {
+					long id = rs.getLong("id");
+					String ws = rs.getString("world");
+					int x = rs.getInt("x");
+					int y = rs.getInt("y");
+					int z = rs.getInt("z");
+					String owner = rs.getString("owner");
+					String ps = rs.getString("protection");
+					CBlock.Protection pl = CBlock.Protection.valueOf(ps);
+					World world = parent.getServer().getWorld(ws);
+					if (world == null) {
+						parent.getLogger().severe(String.format("Unable to load lord block %d: World %s not found.", id, ws));
+						continue;
+					}
+					Location loc = new Location(world, x, y, z);
+					CBlock cb = new CBlock(parent, id, loc, owner, pl);
+					cb.loadSerfs(store);
+					return cb;
+				} catch (SQLException e) {
+					parent.getLogger().throwing(this.getClass().getCanonicalName(), "next", e);
+					continue;
+				} finally {
+					checked = false;
+				}
 			}
 		}
 
@@ -305,7 +313,6 @@ public class CBlockStore {
 				try {
 					hasnext = rs.next();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				checked = true;
@@ -315,28 +322,33 @@ public class CBlockStore {
 
 		@Override
 		public BlockDesc next() {
-			if (!hasNext()) {
-				throw new NoSuchElementException();
-			}
-			try {
-				long id = rs.getLong("id");
-				String ws = rs.getString("world");
-				int x = rs.getInt("x");
-				int y = rs.getInt("y");
-				int z = rs.getInt("z");
-				int mid = rs.getInt("material");
-				byte data = rs.getByte("meta");
-				World world = parent.getServer().getWorld(ws);
-				Location loc = new Location(world, x, y, z);
-				Material mat = Material.getMaterial(mid);
-				BlockDesc cb = new BlockDesc(id, loc, mat, data);
-				return cb;
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			} finally {
-				checked = false;
+			while(true) {
+				if (!hasNext()) {
+					throw new NoSuchElementException();
+				}
+				try {
+					long id = rs.getLong("id");
+					String ws = rs.getString("world");
+					int x = rs.getInt("x");
+					int y = rs.getInt("y");
+					int z = rs.getInt("z");
+					int mid = rs.getInt("material");
+					byte data = rs.getByte("meta");
+					World world = parent.getServer().getWorld(ws);
+					if (world == null) {
+						parent.getLogger().severe(String.format("Unable to load serf block %d: World %s not found.", id, ws));
+						continue;
+					}
+					Location loc = new Location(world, x, y, z);
+					Material mat = Material.getMaterial(mid);
+					BlockDesc cb = new BlockDesc(id, loc, mat, data);
+					return cb;
+				} catch (SQLException e) {
+					parent.getLogger().throwing(this.getClass().getCanonicalName(), "next", e);
+					continue;
+				} finally {
+					checked = false;
+				}
 			}
 		}
 
@@ -345,8 +357,7 @@ public class CBlockStore {
 			try {
 				rs.deleteRow();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				parent.getLogger().throwing(this.getClass().getCanonicalName(), "next", e);
 				throw new IllegalStateException();
 			}
 		}

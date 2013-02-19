@@ -1,10 +1,10 @@
 package com.astro73.controllerblock4k;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -34,11 +34,10 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 			this);
 
 	public boolean blockPhysicsEditCheck = false;
-	private boolean beenEnabled = false;
 
 	public HashMap<Player, CBlock> map = new HashMap<Player, CBlock>();
 
-	public List<CBlock> blocks = new ArrayList<CBlock>();
+	public Set<CBlock> blocks = new LinkedHashSet<CBlock>();
 
 	HashMap<String, CBlock> movingCBlock = new HashMap<String, CBlock>();
 	HashMap<String, Location> moveHere = new HashMap<String, Location>();
@@ -57,35 +56,31 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 	}
 
 	public void onEnable() {
-		if (!beenEnabled) {
-			getServer().getPluginManager().registerEvents(blockListener, this);
-			getServer().getPluginManager().registerEvents(playerListener, this);
-			if (getServer().getScheduler().scheduleSyncRepeatingTask(this,
-					blockListener, 1L, 1L) == -1) {
-				getLogger().warning("Scheduling BlockListener anti-dupe check failed, falling back to old BLOCK_PHYSICS event");
-				blockPhysicsEditCheck = true;
-			}
-			FileConfiguration config = getConfig();
-			if (config.getBoolean("DisableEditDupeProtection")) {
-				getLogger().warning("Edit dupe protection has been disabled, you're on your own from here");
-			}
-			if (!config.getBoolean("QuickRedstoneCheck")) {
-				if (getServer().getScheduler().scheduleSyncRepeatingTask(this, checkRunner, 1L, 1L) == -1) {
-					getLogger().warning("Scheduling CBlockRedstoneCheck task failed, falling back to quick REDSTONE_CHANGE event");
-					config.set("QuickRedstoneCheck", true);
-				}
-			}
-			if (config.getBoolean("QuickRedstoneCheck")) {
-				getServer().getPluginManager().registerEvents(redstoneListener, this);
-			}
-			if (getServer().getScheduler().scheduleSyncDelayedTask(this, this,
-					1L) == -1) {
-				getLogger().severe("Failed to schedule loadData, loading now");
-				loadData();
-			}
-			getLogger().info("Events registered");
-			beenEnabled = true;
+		getServer().getPluginManager().registerEvents(blockListener, this);
+		getServer().getPluginManager().registerEvents(playerListener, this);
+		if (getServer().getScheduler().scheduleSyncRepeatingTask(this,
+				blockListener, 1L, 1L) == -1) {
+			getLogger().warning("Scheduling BlockListener anti-dupe check failed, falling back to old BLOCK_PHYSICS event");
+			blockPhysicsEditCheck = true;
 		}
+		FileConfiguration config = getConfig();
+		if (config.getBoolean("DisableEditDupeProtection")) {
+			getLogger().warning("Edit dupe protection has been disabled, you're on your own from here");
+		}
+		if (!config.getBoolean("QuickRedstoneCheck")) {
+			if (getServer().getScheduler().scheduleSyncRepeatingTask(this, checkRunner, 1L, 1L) == -1) {
+				getLogger().warning("Scheduling CBlockRedstoneCheck task failed, falling back to quick REDSTONE_CHANGE event");
+				config.set("QuickRedstoneCheck", true);
+			}
+		}
+		if (config.getBoolean("QuickRedstoneCheck")) {
+			getServer().getPluginManager().registerEvents(redstoneListener, this);
+		}
+		if (scheduleDataLoad() == -1) {
+			getLogger().severe("Failed to schedule loadData, loading now");
+			loadData();
+		}
+		getLogger().info("Events registered");
 	}
 
 	public boolean onCommand(CommandSender sender, Command command,
@@ -118,9 +113,12 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 				}
 			} else if (args[0].equals("reload")) {
 				reloadConfig();
-				//TODO: Reload data
-				getLogger().info("Config reloaded");
-				sender.sendMessage("Config reloaded");
+				getLogger().info("Config reloaded, reloading data...");
+				sender.sendMessage("Config reloaded, reloading data...");
+				if (scheduleDataLoad() == -1) {
+					getLogger().info("Failed to reload data");
+					sender.sendMessage("Failed to reload data");
+				}
 			} else if (args[0].equalsIgnoreCase("add")
 					|| args[0].equalsIgnoreCase("we")
 					|| args[0].equalsIgnoreCase("a")) {
@@ -312,20 +310,33 @@ public class ControllerBlock extends JavaPlugin implements Runnable {
 
 	public CBlockStore getStore() {
 		try {
-			return new CBlockStore(getConfig());
+			return new CBlockStore(this, getConfig());
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			getLogger().throwing("CBlockStore", "<constructor>", e);
 			return null;
 		}
 	}
-
+	
+	public int scheduleDataLoad() {
+		return getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+			@Override
+			public void run() {
+				loadData();
+			}
+		}, 1L);
+	}
+	
 	public void loadData() {
+		getLogger().info("Loading data...");
 		int i = 0;
 		CBlockStore store = getStore();
 		for (CBlock lord : store.loadAllLords(this)) {
 			this.blocks.add(lord);
 			i++;
+			if (i % 50 == 0) {
+				getLogger().info("Loading SQL data - " + i + " ControllerBlocks loaded");
+			}
 		}
 		getLogger().info("Loaded SQL data - " + i + " ControllerBlocks loaded");
 	}
